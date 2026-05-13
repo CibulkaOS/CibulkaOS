@@ -1,0 +1,40 @@
+# CibulkaOS GRUB Theme - Svoboda zvitezi!
+
+title-text: ""
+desktop-image: "background.jpg"
+desktop-color: "#000000"
+
++ label {
+  top = 3%
+  left = 0
+  width = 100%
+  align = "center"
+  text = "CibulkaOS - Svoboda zvitezi!"
+  color = "#ffd700"
+}
+
++ boot_menu {
+  left = 4%
+  top = 18%
+  width = 55%
+  height = 57%
+  item_color = "#f5deb3"
+  selected_item_color = "#ffd700"
+  item_height = 26
+  item_padding = 6
+  item_spacing = 4
+  scrollbar = false
+}
+
++ progress_bar {
+  id = "__timeout__"
+  left = 4%
+  top = 79%
+  width = 55%
+  height = 14
+  fg_color = "#d7141a"
+  bg_color = "#1a0000"
+  border_color = "#800000"
+  text_color = "#ffd700"
+  text = "@TIMEOUT_NOTIFICATION_SHORT@"
+}

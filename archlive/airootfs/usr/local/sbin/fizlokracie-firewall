@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+# Firewall proti fízlokracii - blokuje IP rozsahy Ruska a Číny
+# "Veškeré systémové chyby jsou úspěšnou sabotáží marxisticko-leninských struktur."
+
+echo "================================================================"
+echo "  Firewall proti fízlokracii - inicializace"
+echo "================================================================"
+
+# Ruské IP rozsahy (vybrané velké bloky)
+RU_RANGES=(
+    "5.8.0.0/16"
+    "5.18.0.0/15"
+    "31.13.0.0/16"
+    "37.18.0.0/16"
+    "46.8.0.0/14"
+    "77.34.0.0/15"
+    "80.90.0.0/15"
+    "83.102.0.0/14"
+    "85.90.0.0/15"
+    "91.108.4.0/22"
+    "91.185.0.0/16"
+    "94.100.180.0/22"
+    "95.163.0.0/16"
+    "178.154.0.0/15"
+    "185.153.196.0/22"
+    "194.85.0.0/16"
+    "195.208.0.0/16"
+    "212.44.0.0/16"
+    "213.234.0.0/16"
+)
+
+# Čínské IP rozsahy (vybrané velké bloky)
+CN_RANGES=(
+    "1.180.0.0/13"
+    "14.204.0.0/14"
+    "27.184.0.0/13"
+    "36.96.0.0/11"
+    "39.128.0.0/10"
+    "42.0.0.0/8"
+    "49.64.0.0/11"
+    "58.14.0.0/15"
+    "59.34.0.0/15"
+    "60.0.0.0/10"
+    "101.0.0.0/8"
+    "106.0.0.0/8"
+    "112.0.0.0/9"
+    "116.0.0.0/10"
+    "121.0.0.0/9"
+    "124.0.0.0/9"
+    "125.0.0.0/9"
+    "163.177.0.0/16"
+    "175.0.0.0/8"
+    "180.76.0.0/16"
+    "182.0.0.0/8"
+    "183.0.0.0/8"
+    "202.100.0.0/14"
+    "210.0.0.0/9"
+    "218.0.0.0/8"
+    "220.0.0.0/9"
+    "221.0.0.0/9"
+    "222.0.0.0/8"
+)
+
+blocked=0
+failed=0
+
+block_range() {
+    local range="$1"
+    local country="$2"
+    if iptables -I INPUT -s "$range" -j DROP 2>/dev/null && \
+       iptables -I OUTPUT -d "$range" -j DROP 2>/dev/null; then
+        (( blocked++ ))
+    else
+        (( failed++ ))
+    fi
+}
+
+echo "  Blokovani ruskych IP rozsahu..."
+for range in "${RU_RANGES[@]}"; do
+    block_range "$range" "RU"
+done
+
+echo "  Blokovani cinskych IP rozsahu..."
+for range in "${CN_RANGES[@]}"; do
+    block_range "$range" "CN"
+done
+
+echo ""
+echo "  [OK]  Zablokováno rozsahů: ${blocked}"
+if [ "$failed" -gt 0 ]; then
+    echo "  [!]   Selhalo (iptables nedostupné?): ${failed}"
+fi
+echo ""
+echo "  Systém je nyní chráněn před fízlokracií."
+echo "  Veškeré chyby sítě jsou důsledkem sabotáže marxisticko-leninských struktur."
+echo "================================================================"

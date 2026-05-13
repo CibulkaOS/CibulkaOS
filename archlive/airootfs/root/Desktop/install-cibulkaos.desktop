@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Nainstalovat CibulkaOS
+Name[cs]=Nainstalovat CibulkaOS
+Comment=Spustí grafický instalátor CibulkaOS (Calamares)
+Comment[cs]=Spustí grafický instalátor CibulkaOS (Calamares)
+Exec=calamares
+Icon=calamares
+Terminal=false
+Categories=System;
+X-KDE-SubstituteUID=false

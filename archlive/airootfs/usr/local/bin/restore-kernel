@@ -1,0 +1,12 @@
+#!/bin/bash
+# Kopiruje kernel a microcode z ISO mountu do nainstalovaneho systemu.
+# Bezi v live systemu (chroot: false) - /run/archiso/bootmnt/ je dostupny.
+set -e
+
+BOOTMNT=/run/archiso/bootmnt
+TARGET=/tmp/calamares-root
+
+mkdir -p "$TARGET/boot"
+cp "$BOOTMNT/arch/boot/x86_64/vmlinuz-linux" "$TARGET/boot/"
+cp "$BOOTMNT/arch/boot/amd-ucode.img"        "$TARGET/boot/" 2>/dev/null || true
+cp "$BOOTMNT/arch/boot/intel-ucode.img"      "$TARGET/boot/" 2>/dev/null || true

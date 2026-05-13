@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# adduser - wrapper s lustrací přes Cibulkovy seznamy
+
+# Zkrácená verze Cibulkových seznamů (historické veřejné záznamy + fiktivní jména pro demo)
+STB_REGISTROVANI=(
+    "reznik" "stransky" "blazej" "kavka" "horak" "polacek"
+    "sebesta" "mrazek" "kovar" "blaha" "veselsky" "kubicek"
+    "fiser" "maly" "cervenka" "kaplan" "adam" "simek"
+    "vlasak" "tuma" "bures" "hana" "kollar" "janda"
+    "bartos" "ondra" "kaspar" "jiri" "modrý" "tajny"
+    "agent007" "comrade" "tovarisch" "volkov" "petrov"
+)
+
+if [ $# -eq 0 ]; then
+    echo "Použití: adduser <uživatelské_jméno> [volby]"
+    exit 1
+fi
+
+USERNAME="${1}"
+
+echo ""
+echo "================================================================"
+echo "  LUSTRACE - Cibulkovy seznamy (v$(date +%Y).0)"
+echo "================================================================"
+echo "  Prověřuji: ${USERNAME}"
+echo -n "  Konzultuji databázi..."
+
+sleep 0.5; echo -n "."; sleep 0.3; echo -n "."; sleep 0.4; echo ""
+echo ""
+
+LOWER_NAME=$(echo "$USERNAME" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9')
+
+FOUND=0
+for agent in "${STB_REGISTROVANI[@]}"; do
+    if [[ "$LOWER_NAME" == "$agent" ]]; then
+        FOUND=1
+        break
+    fi
+done
+
+if [ "$FOUND" -eq 1 ]; then
+    echo "  [!!!] SHODA NALEZENA v Cibulkových seznamech!"
+    echo "  [!!!] Uživatel '${USERNAME}' je evidovaný agent StB."
+    echo "  [!!!] Vytvoření účtu zamítnuto. Systém byl informován."
+    echo "================================================================"
+    echo ""
+    exit 1
+fi
+
+echo "  [OK]  '${USERNAME}' není veden v Cibulkových seznamech."
+echo "  [OK]  Lustrace dokončena. Vytvářím účet..."
+echo "================================================================"
+echo ""
+exec /usr/bin/useradd "$@"

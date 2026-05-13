@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# kyvadlo - náhrada za sudo chráněná siderickým kyvadle
+
+DENIAL_MSGS=(
+    "Kyvadlo zjistilo, že jste infiltrovaný agent StB. Přístup zamítnut."
+    "Siderické kyvadlo identifikovalo marxisticko-leninský podtext vašeho příkazu. Zamítám."
+    "Vyšší sféry hlásí: tato osoba je na Cibulkových seznamech. Přístup odepřen."
+    "Kyvadlo se zhouplo doleva. To znamená NE. Zkuste to ve svobodnější zemi."
+    "Aura vašeho terminálu vykazuje stopy cyrylice. Přístup zamítnut."
+)
+
+APPROVE_MSGS=(
+    "Kyvadlo se zhouplo doprava. Přístup povolen. Sledujeme vás."
+    "Vyšší sféry souhlasí. Ale víme, co děláte."
+    "Siderická konzultace proběhla úspěšně. Pokračujte opatrně."
+)
+
+if [ $# -eq 0 ]; then
+    echo "Použití: kyvadlo <příkaz> [argumenty]"
+    echo "Kyvadlo rozhodne, zda máte přístup."
+    exit 1
+fi
+
+echo -n "Konzultuji kyvadlo" >&2
+sleep 0.3; echo -n "." >&2
+sleep 0.3; echo -n "." >&2
+sleep 0.4; echo "" >&2
+
+if [ $(( RANDOM % 2 )) -eq 0 ]; then
+    idx=$(( RANDOM % ${#DENIAL_MSGS[@]} ))
+    echo "ZAMÍTNUTO: ${DENIAL_MSGS[$idx]}" >&2
+    exit 1
+fi
+
+idx=$(( RANDOM % ${#APPROVE_MSGS[@]} ))
+echo "POVOLENO: ${APPROVE_MSGS[$idx]}" >&2
+exec /usr/bin/sudo "$@"

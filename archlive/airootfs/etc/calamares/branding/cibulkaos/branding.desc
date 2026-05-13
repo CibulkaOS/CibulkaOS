@@ -1,0 +1,30 @@
+---
+componentName: cibulkaos
+
+strings:
+    productName:           CibulkaOS
+    shortProductName:      CibulkaOS
+    version:               "2026"
+    shortVersion:          "2026"
+    versionedName:         CibulkaOS 2026
+    shortVersionedName:    CibulkaOS 2026
+    bootloaderEntryName:   CibulkaOS
+    productUrl:            https://cibulka.net
+    supportUrl:            https://cibulka.net
+    knownIssuesUrl:        https://cibulka.net
+    releaseNotesUrl:       https://cibulka.net
+
+images:
+    productLogo:           ""
+    productIcon:           ""
+    productWelcome:        ""
+
+slideshow:    "show.qml"
+slideshowAPI: 2
+
+style:
+    sidebarBackground:    "#1c1c2e"
+    sidebarText:          "#cdd6f4"
+    sidebarTextSelect:    "#1e1e2e"
+    sidebarTextHighlight: "#cba6f7"
+    sidebarVersion:       "#a6adc8"
