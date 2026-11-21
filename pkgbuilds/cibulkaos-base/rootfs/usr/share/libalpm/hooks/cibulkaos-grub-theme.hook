@@ -1,0 +1,12 @@
+# Téma Anti-GRUB se při instalaci kopíruje do /boot/grub/themes/cibulkaos (Calamares,
+# shellprocess@grub-background). Po upgradu cibulkaos-base ho tento hook zesynchronizuje.
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Path
+Target = usr/share/grub/themes/cibulkaos/*
+
+[Action]
+Description = CibulkaOS: aktualizuji téma Anti-GRUB v /boot...
+When = PostTransaction
+Exec = /usr/lib/cibulkaos/sync-grub-theme

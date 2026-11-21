@@ -1,0 +1,18 @@
+#!/bin/bash
+# Přepíše jádra a microcode v /boot tak, aby neobsahovaly sparse díry.
+# Volá pacman hook 95-cibulkaos-boot-nosparse.hook; viz také restore-kernel.
+shopt -s nullglob
+rc=0
+for f in /boot/vmlinuz-* /boot/*-ucode.img; do
+    [ -f "$f" ] && [ ! -L "$f" ] || continue
+    tmp="${f}.cibulkaos-nosparse"
+    if cp --sparse=never --preserve=mode,timestamps -- "$f" "$tmp" && mv -f -- "$tmp" "$f"; then
+        :
+    else
+        echo "CibulkaOS: nepodařilo se přepsat $f bez sparse děr" >&2
+        rm -f -- "$tmp"
+        rc=1
+    fi
+done
+sync -f /boot 2>/dev/null || true
+exit "$rc"

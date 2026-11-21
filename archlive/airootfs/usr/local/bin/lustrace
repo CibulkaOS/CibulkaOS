@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-# lustrace - vyhledávání osob a krycích jmen v reálných Cibulkových seznamech
-exec /usr/local/bin/adduser --hledat "$@"

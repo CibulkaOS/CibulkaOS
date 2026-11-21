@@ -6,3 +6,4 @@ pkgbuilds/*/src/
 pkgbuilds/*/pkg/
 pkgbuilds/*/*.pkg.tar.*
 pkgbuilds/calamares/calamares/
+__pycache__/

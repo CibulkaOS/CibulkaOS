@@ -1,0 +1,14 @@
+# Musí běžet PO 90-mkinitcpio-install.hook (ten kopíruje nové jádro do /boot).
+# GRUB Btrfs ovladač selže ("premature end of file") na jádře/microcode se sparse dírou,
+# proto se soubory v /boot po každém upgradu jádra nebo microcode přepíšou bez děr.
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Path
+Target = usr/lib/modules/*/vmlinuz
+Target = boot/*-ucode.img
+
+[Action]
+Description = CibulkaOS: přepisuji jádro a microcode v /boot bez sparse děr (Anti-GRUB na Btrfs)...
+When = PostTransaction
+Exec = /usr/lib/cibulkaos/boot-nosparse

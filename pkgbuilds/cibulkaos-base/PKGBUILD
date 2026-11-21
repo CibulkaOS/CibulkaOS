@@ -1,0 +1,51 @@
+# Maintainer: CibulkaOS Build System
+#
+# Základní balíček CibulkaOS: skripty (kyvadlo, lustrace, Anti-GRUB, firewall proti fízlokracii),
+# systemd služby, udev/tmpfiles/sysusers konfigurace, pacman hooky, témata, tapety a Cibulkovy seznamy.
+#
+# Zdroje NEJSOU stahovány – balíček se skládá přímo ze stromu ./rootfs/ (zrcadlí cílové cesty).
+# Novou verzi pro nainstalované systémy vydáte zvýšením pkgver/pkgrel a `make pkgs`.
+#
+# Pozn. k cestám:
+#  - /usr/local/bin/sudo je záměrná výjimka z Arch pravidel (balíčky do /usr/local nepatří):
+#    /usr/bin/sudo vlastní balíček 'sudo' a /usr/local/bin je v PATH před /usr/bin.
+#  - /etc/sysusers.d/{basic,arch}.conf přebíjí stejnojmenné soubory z /usr/lib/sysusers.d
+#    (UID 0 = 'cibulka'), proto musí být v /etc.
+
+pkgname=cibulkaos-base
+pkgver=2026.11.21
+pkgrel=1
+pkgdesc='CibulkaOS – siderické kyvadlo, lustrace, Anti-GRUB a firewall proti fízlokracii'
+arch=('any')
+url='https://cibulka.net/'
+license=('LicenseRef-CibulkaOS')
+depends=(
+    'bash'
+    'coreutils'
+    'gawk'
+    'grub'
+    'gzip'
+    'nftables'
+    'sed'
+    'shadow'
+    'sudo'
+    'systemd'
+)
+optdepends=(
+    'iptables: záložní backend firewallu proti fízlokracii'
+    'plasma-workspace: nastavení tapety CibulkaOS po prvním přihlášení'
+    'konsole: barevné schéma a profil CibulkaOS'
+    'sddm: konfigurace přihlašovací obrazovky'
+    'grml-zsh-config: načítání ~/.zshrc.local (shellová ochrana v zsh)'
+)
+backup=(
+    'etc/sudoers.d/10-cibulka'
+)
+
+package() {
+    cp -dr --no-preserve=ownership --preserve=mode,links "$startdir/rootfs/." "$pkgdir/"
+
+    # Práva musí odpovídat balíčku 'sudo' (jinak pacman hlásí rozdílná práva adresáře)
+    chmod 0750 "$pkgdir/etc/sudoers.d"
+    chmod 0440 "$pkgdir/etc/sudoers.d/10-cibulka"
+}

@@ -1,1 +1,1 @@
-/etc/systemd/system/anti-grub-check.service
+/usr/lib/systemd/system/anti-grub-check.service

@@ -1,0 +1,7 @@
+#!/bin/bash
+# Zkopíruje aktuální téma Anti-GRUB do /boot, pokud je zavaděč s tímto tématem nainstalovaný.
+# V live ISO / při pacstrap (bez /boot/grub/themes/cibulkaos) nedělá nic.
+SRC=/usr/share/grub/themes/cibulkaos
+DST=/boot/grub/themes/cibulkaos
+[ -d "$DST" ] || exit 0
+cp -r --sparse=never -- "$SRC/." "$DST/"

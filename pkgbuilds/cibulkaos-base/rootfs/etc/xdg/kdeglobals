@@ -1,0 +1,9 @@
+[General]
+ColorScheme=CibulkaOS
+AccentColor=255,215,0
+
+[Icons]
+Theme=breeze-dark
+
+[KDE]
+LookAndFeelPackage=org.kde.breezedark.desktop

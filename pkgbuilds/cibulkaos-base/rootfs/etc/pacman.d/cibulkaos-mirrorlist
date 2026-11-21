@@ -1,0 +1,4 @@
+# Pacman repo [cibulkaos] – aktualizace balíčku cibulkaos-base.
+# Soubor spravuje balíček cibulkaos-base (změna adresy repa přijde jako běžná aktualizace).
+# Publikuje se přes scripts/publish-repo.sh do GitHub Release "repo".
+Server = https://github.com/lukastrkan/CibulkaOS/releases/download/repo

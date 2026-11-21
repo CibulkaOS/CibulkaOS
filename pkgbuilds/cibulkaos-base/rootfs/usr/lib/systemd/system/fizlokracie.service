@@ -1,0 +1,13 @@
+[Unit]
+Description=Firewall proti fízlokracii (blokování RU/CN IP)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/fizlokracie-firewall
+RemainAfterExit=yes
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target

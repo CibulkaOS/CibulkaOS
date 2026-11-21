@@ -1,0 +1,11 @@
+NAME="CibulkaOS"
+PRETTY_NAME="CibulkaOS (vydání Anti-GRU)"
+ID=cibulkaos
+ID_LIKE=arch
+BUILD_ID=rolling
+ANSI_COLOR="38;2;255;215;0"
+HOME_URL="https://cibulka.net/"
+DOCUMENTATION_URL="https://cibulka.net/"
+SUPPORT_URL="https://cibulka.net/"
+BUG_REPORT_URL="https://cibulka.net/"
+LOGO=cibulkaos-logo

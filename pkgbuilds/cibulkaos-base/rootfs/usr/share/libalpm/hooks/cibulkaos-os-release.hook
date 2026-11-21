@@ -1,0 +1,13 @@
+# /usr/lib/os-release patří balíčku 'filesystem' a jeho upgrade ho přepíše zpět na Arch Linux.
+# Tento hook po každé instalaci/upgradu 'filesystem' (i 'cibulkaos-base') vrátí identitu CibulkaOS.
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = filesystem
+Target = cibulkaos-base
+
+[Action]
+Description = CibulkaOS: obnovuji /usr/lib/os-release (identita distribuce)...
+When = PostTransaction
+Exec = /usr/bin/install -m644 /usr/share/cibulkaos/os-release /usr/lib/os-release

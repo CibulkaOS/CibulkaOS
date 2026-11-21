@@ -11,24 +11,46 @@ QEMU_CORES := 8
 DISK_IMG   := $(OUT_DIR)/cibulkaos-disk.qcow2
 DISK_SIZE  := 20G
 
-.PHONY: all build pkgs run run-bios disk run-install run-installed clean clean-pkgs clean-disk help
+.PHONY: all build pkgs pkg-calamares pkg-base publish-repo run run-bios disk run-install run-installed clean clean-pkgs clean-disk help
 
 all: help
 
-## pkgs: Sestaví vlastní balíčky ze zdrojáků (Calamares) — spouštět BEZ sudo
-pkgs:
+## pkgs: Sestaví vlastní balíčky (Calamares ze zdrojáků + cibulkaos-base) — spouštět BEZ sudo
+pkgs: pkg-calamares pkg-base
+
+## pkg-calamares: Sestaví patchovaný Calamares ze zdrojáků do lokálního repa (pomalé)
+pkg-calamares:
 	@echo ">>> Sestavuji Calamares ze zdrojového kódu (https://codeberg.org/Calamares/calamares)..."
 	@mkdir -p $(LOCALREPO)
 	cd $(PKGBUILDS)/calamares && PKGDEST=$(LOCALREPO) makepkg -sf --noconfirm --skippgpcheck
 	repo-add $(LOCALREPO)/cibulkaos.db.tar.gz $(LOCALREPO)/calamares-*.pkg.tar.zst
 	@echo ">>> Hotovo: $$(ls $(LOCALREPO)/calamares-*.pkg.tar.zst)"
 
-## build: Sestaví CibulkaOS ISO (vyžaduje root; spusťte 'make pkgs' nejdříve)
-build:
-	@if [ ! -f "$(LOCALREPO)/cibulkaos.db" ]; then \
-		echo "CHYBA: Lokální repo nenalezeno. Spusťte nejprve 'make pkgs' (bez sudo)." >&2; \
+## pkg-base: Sestaví balíček cibulkaos-base (skripty, služby, hooky, témata) do lokálního repa (rychlé)
+pkg-base:
+	@if [ "$$(id -u)" -eq 0 ]; then echo "CHYBA: makepkg nesmí běžet jako root – spouštějte make BEZ sudo." >&2; exit 1; fi
+	@echo ">>> Sestavuji cibulkaos-base..."
+	@mkdir -p $(LOCALREPO)
+	rm -f $(LOCALREPO)/cibulkaos-base-*.pkg.tar.zst
+	cd $(PKGBUILDS)/cibulkaos-base && PKGDEST=$(LOCALREPO) makepkg -fd --noconfirm
+	repo-add $(LOCALREPO)/cibulkaos.db.tar.gz $(LOCALREPO)/cibulkaos-base-*.pkg.tar.zst
+	@echo ">>> Hotovo: $$(ls $(LOCALREPO)/cibulkaos-base-*.pkg.tar.zst)"
+
+## publish-repo: Publikuje cibulkaos-base do veřejného pacman repa (GitHub Release 'repo'; vyžaduje gh)
+publish-repo: pkg-base
+	scripts/publish-repo.sh
+
+## build: Sestaví CibulkaOS ISO (spouštět BEZ sudo, sudo volá sám; Calamares nejdříve přes 'make pkgs')
+build: pkg-base
+	@if ! ls $(LOCALREPO)/calamares-*.pkg.tar.zst >/dev/null 2>&1; then \
+		echo "CHYBA: Calamares v lokálním repu nenalezen. Spusťte nejprve 'make pkgs' (bez sudo)." >&2; \
 		exit 1; \
 	fi
+	@# mkarchiso používá pacman cache hostitele; stará kopie cibulkaos-base se stejnou verzí
+	@# by neprošla kontrolou checksumu proti novému repu -> smazat ji z cache.
+	@for d in $$(pacman-conf CacheDir); do \
+		sudo find "$${d:?}" -maxdepth 1 -name 'cibulkaos-base-*.pkg.tar.zst*' -delete; \
+	done
 	@echo ">>> Sestavuji CibulkaOS ISO..."
 	@mkdir -p $(OUT_DIR)
 	sudo mkarchiso -v -w $(WORK_DIR) -o $(OUT_DIR) $(PROFILE)
@@ -128,11 +150,12 @@ clean:
 	sudo rm -rf $(WORK_DIR)
 	@echo ">>> Hotovo."
 
-## clean-pkgs: Smaže lokální repo s balíčky (vynutí rebuild Calamares)
+## clean-pkgs: Smaže lokální repo s balíčky (vynutí rebuild Calamares i cibulkaos-base)
 clean-pkgs:
 	@echo ">>> Mazem lokalni repo $(LOCALREPO)..."
 	rm -rf $(LOCALREPO)
 	rm -rf $(PKGBUILDS)/calamares/*.pkg.tar.zst $(PKGBUILDS)/calamares/src $(PKGBUILDS)/calamares/pkg
+	rm -rf $(PKGBUILDS)/cibulkaos-base/src $(PKGBUILDS)/cibulkaos-base/pkg
 	@echo ">>> Hotovo."
 
 ## clean-disk: Smaže virtuální disk (začít instalaci znovu)

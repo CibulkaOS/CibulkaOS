@@ -1,0 +1,54 @@
+# CibulkaOS Anti-GRUB Theme — „Archiv StB × siderické kyvadlo“
+title-text: ""
+desktop-image: "background.png"
+desktop-color: "#0b0a0c"
+terminal-font: "Terminus Regular 14"
+terminal-box: "terminal_box_*.png"
+terminal-left: "0"
+terminal-top: "0"
+terminal-width: "100%"
+terminal-height: "100%"
+terminal-border: "0"
+
++ label {
+  top = 5%
+  left = 4%
+  width = 52%
+  height = 36
+  align = "left"
+  text = "ANTI-GRUB  |  CIBULKAOS — SVOBODA ZVÍTĚZÍ!"
+  color = "#ffd700"
+  font = "Ubuntu Regular 20"
+}
+
++ boot_menu {
+  left = 4%
+  top = 18%
+  width = 54%
+  height = 58%
+  item_font = "Ubuntu Regular 20"
+  item_color = "#c4bcad"
+  selected_item_color = "#0b0a0c"
+  icon_width = 36
+  icon_height = 36
+  item_icon_space = 16
+  item_height = 44
+  item_padding = 6
+  item_spacing = 8
+  selected_item_pixmap_style = "select_*.png"
+  scrollbar = false
+}
+
++ progress_bar {
+  id = "__timeout__"
+  left = 4%
+  top = 84%
+  width = 54%
+  height = 24
+  fg_color = "#ffd700"
+  bg_color = "#2c2531"
+  border_color = "#b3122e"
+  text_color = "#0b0a0c"
+  text = "Kyvadlo odpočítává: %d s"
+  font = "Terminus Regular 14"
+}

@@ -182,6 +182,10 @@ nftables
 # Display manager (pro instalovaný systém)
 sddm
 
+# ===== CibulkaOS (lokální repo [cibulkaos], sestaveno přes: make pkgs) =====
+# Skripty, služby, hooky, témata a data CibulkaOS – zůstává i v nainstalovaném systému
+cibulkaos-base
+
 # ===== Grafický instalátor Calamares =====
 # Sestaveno ze zdrojáků přes: make pkgs
 calamares
