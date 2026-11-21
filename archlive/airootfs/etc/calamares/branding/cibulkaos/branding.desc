@@ -1,6 +1,14 @@
 ---
 componentName: cibulkaos
 
+welcomeStyleCalamares: false
+welcomeExpandingLogo:  true
+windowExpanding:       normal
+windowSize:            1024px,640px
+windowPlacement:       center
+sidebar:               widget
+navigation:            widget
+
 strings:
     productName:           CibulkaOS
     shortProductName:      CibulkaOS
@@ -15,16 +23,16 @@ strings:
     releaseNotesUrl:       https://cibulka.net
 
 images:
-    productLogo:           "cibulka.jpg"
-    productIcon:           "cibulka.jpg"
-    productWelcome:        "cibulka.jpg"
+    productLogo:           "cibulkaos-stamp.png"
+    productIcon:           "cibulkaos-stamp.png"
+    productWelcome:        "calamares-welcome.png"
 
 slideshow:    "show.qml"
 slideshowAPI: 2
 
+# Calamares 3.4 vyžaduje přesné PascalCase názvy klíčů (viz libcalamaresui/Branding.cpp)
 style:
-    sidebarBackground:    "#1c1c2e"
-    sidebarText:          "#cdd6f4"
-    sidebarTextSelect:    "#1e1e2e"
-    sidebarTextHighlight: "#cba6f7"
-    sidebarVersion:       "#a6adc8"
+    SidebarBackground:        "#16131a"
+    SidebarText:              "#c4bcad"
+    SidebarBackgroundCurrent: "#ffd700"
+    SidebarTextCurrent:       "#0b0a0c"

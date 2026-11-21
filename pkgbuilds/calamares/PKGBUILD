@@ -1,0 +1,89 @@
+# Maintainer: CibulkaOS Build System
+# Sestaveno ze zdrojového kódu: https://codeberg.org/Calamares/calamares
+
+pkgname=calamares
+pkgver=3.4.2.r20.gd62849a39
+pkgrel=1
+pkgdesc='Distribution-independent installer framework (CibulkaOS build)'
+arch=('x86_64')
+url='https://codeberg.org/Calamares/calamares'
+license=('GPL-3.0-or-later')
+
+depends=(
+    'boost-libs'
+    'hwinfo'
+    'kconfig'
+    'kcoreaddons'
+    'kiconthemes'
+    'ki18n'
+    'kio'
+    'kpackage'
+    'kparts'
+    'kpmcore'
+    'libpwquality'
+    'python'
+    'python-yaml'
+    'qt6-base'
+    'qt6-svg'
+    'solid'
+    'yaml-cpp'
+    'squashfs-tools'
+    'os-prober'
+)
+
+makedepends=(
+    'cmake'
+    'extra-cmake-modules'
+    'boost'
+    'git'
+    'qt6-tools'
+    'qt6-5compat'
+)
+
+source=("calamares::git+https://codeberg.org/Calamares/calamares.git")
+sha256sums=('SKIP')
+
+pkgver() {
+    cd "calamares"
+    local tag
+    tag=$(git describe --tags --abbrev=0 2>/dev/null)
+    if [[ -n "$tag" ]]; then
+        printf "%s.r%s.g%s" \
+            "${tag#v}" \
+            "$(git rev-list "${tag}..HEAD" --count)" \
+            "$(git rev-parse --short HEAD)"
+    else
+        printf "r%s.g%s" \
+            "$(git rev-list --count HEAD)" \
+            "$(git rev-parse --short HEAD)"
+    fi
+}
+
+prepare() {
+    cd "calamares"
+    # CibulkaOS: root účet (UID 0) se jmenuje 'cibulka', nikoli 'root'.
+    # Bez tohoto patche SetPasswordJob volá `usermod -p ... root`, což selže.
+    sed -i 's/new SetPasswordJob( "root", rootPassword() );/new SetPasswordJob( "cibulka", rootPassword() );/' \
+        src/modules/users/Config.cpp
+    sed -i 's/if ( m_userName == "root" && m_newPassword.isEmpty() )/if ( ( m_userName == "root" || m_userName == "cibulka" ) \&\& m_newPassword.isEmpty() )/' \
+        src/modules/users/SetPasswordJob.cpp
+    sed -i 's/if name != "root":/if name not in ("root", "cibulka"):/' \
+        src/modules/networkcfg/main.py
+}
+
+build() {
+    cmake -S calamares -B build \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DWITH_QT6=ON \
+        -DBoost_NO_BOOST_CMAKE=ON \
+        -DWEBVIEW_FORCE_WEBKIT=OFF \
+        -DINSTALL_CONFIG=ON \
+        -DSKIP_MODULES="webview interactiveterminal tracking oemid"
+    cmake --build build -- -j"$(nproc)"
+}
+
+package() {
+    DESTDIR="$pkgdir" cmake --install build
+}
