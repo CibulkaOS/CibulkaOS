@@ -44,6 +44,12 @@ Pozn.: `mkarchiso` přeskakuje už hotové fáze ve `work/`; po změně `cibulka
 - Klíčenku pacmana (`pacman-key --init/--populate`) vytváří instalátor v `shellprocess.conf`; v live ISO je `/etc/pacman.d/gnupg` jen tmpfs a do cíle se nekopíruje.
 - Pozor: `sudo pacman -Syu` jde přes `kyvadlo` (50% zamítnutí); pro jistotu `/usr/bin/sudo pacman -Syu`.
 
+## Vydání ISO a web
+- ISO se vydává jako GitHub Release s tagem `vRRRR.MM.DD` (asset `cibulkaos-RRRR.MM.DD-x86_64.iso` + `.sha256`). **Limit GitHubu je 2 GiB na soubor** – ISO má ~2,13 GB (rezerva cca 18 MB); při přidávání balíčků hlídat velikost, případně ubrat nástroje z `packages.x86_64` převzaté z archiso `releng`.
+- Release `repo` je jen úložiště pacman repa `[cibulkaos]` (spravuje `scripts/publish-repo.sh`), ISO do něj nepatří.
+- Web `web/` nasazuje `.github/workflows/pages.yml` na https://lukastrkan.github.io/CibulkaOS/ (GitHub Pages, build_type workflow). Tlačítko ke stažení v `web/index.html` odkazuje přímo na asset konkrétního release → při novém vydání aktualizovat URL, datum a název souboru.
+- Kořenový `README.md` a `LICENSE` (GPL-3.0-or-later, jako archiso). Zdroj seznamů StB: https://www.slunecnice.cz/sw/seznamy-stb-snb/
+
 ## Struktura repozitáře
 - `archlive/` – profil pro `mkarchiso`:
   - `profiledef.sh` – metadata ISO, bootmodes (`bios.syslinux`, `uefi.grub`) a `file_permissions` (jen pro soubory v `airootfs/`; práva souborů z `cibulkaos-base` nastavuje jeho PKGBUILD).
@@ -65,11 +71,11 @@ Pozn.: `mkarchiso` přeskakuje už hotové fáze ve `work/`; po změně `cibulka
   - `etc/sudoers.d/10-cibulka` – `Defaults runas_default=cibulka` (nutné, aby `/usr/bin/sudo` fungovalo bez uživatele `root`); práva 0750/0440 nastavuje `PKGBUILD`.
   - `etc/sysusers.d/{basic,arch}.conf` – override `/usr/lib/sysusers.d/` (UID 0 = `cibulka`, zabrání vzniku `root:979`).
   - `etc/profile.d/cibulka.sh` – wrappery pro `curl`, `ping` a `command_not_found_handle(r)` (načítáno v bash i zsh včetně non-login terminálů přes `/etc/bash.bashrc` a `.zshrc.local`); `etc/skel/.zshrc.local`.
-  - `etc/xdg/` – `autostart/cibulkaos-wallpaper.desktop` (tapeta po prvním přihlášení), `kdeglobals`, `konsolerc`; `etc/sddm.conf.d/10-cibulkaos.conf`.
+  - `etc/xdg/` – `autostart/cibulkaos-wallpaper.desktop` (tapeta `wallpapers/CibulkaOS/wallpaper-pravy-blok.jpg` po prvním přihlášení), `kdeglobals`, `konsolerc`; `etc/sddm.conf.d/10-cibulkaos.conf`.
   - `usr/share/cibulkaos/` – `cibulkovy-seznamy.tsv.gz` (100 666 reálných záznamů StB), `cibulkovy-seznamy.txt` (fallback), `linux.preset`, `os-release`.
   - `usr/share/grub/themes/cibulkaos/` – Anti-GRUB téma kopírované do cílového systému; dále `usr/share/{wallpapers/CibulkaOS,icons,color-schemes,konsole,sddm}`.
 - `pkgbuilds/calamares/PKGBUILD` *(build výstupy a checkout zdrojáků `calamares/`, `src/`, `pkg/` jsou v `.gitignore`)* – staví Calamares ze zdrojáků s patchem v `prepare()`, aby `SetPasswordJob` nastavoval heslo pro `"cibulka"` místo `"root"` a `networkcfg` ignoroval `"cibulka"` jako live uživatele.
-- `web/` – samostatná statická prezentační WWW stránka (`index.html`, `style.css`, `app.js`, `assets/`) bez build kroku a bez externích JS knihoven. Texty jsou záměrně netechnické (pět funkcí jako archivní spisy + stažení ISO), bez ukázek ze systému.
+- `web/` – samostatná statická prezentační WWW stránka (`index.html`, `style.css`, `app.js`, `assets/`) bez build kroku a bez externích JS knihoven. Texty jsou záměrně netechnické (pět funkcí jako archivní spisy + stažení ISO), bez ukázek ze systému. Nasazení přes GitHub Pages (viz „Vydání ISO a web“).
 
 ## Kritické detaily a pastičky (neměnit bez ověření!)
 1. **UID 0 = `cibulka` (žádný `root` v `/etc/passwd`):**
@@ -94,5 +100,5 @@ Pozn.: `mkarchiso` přeskakuje už hotové fáze ve `work/`; po změně `cibulka
 6. **Čeština všude (žádná „czenglish“):**
    - Live systém má `LANG=cs_CZ.UTF-8` (`airootfs/etc/locale.conf`), locale se generuje v `customize_airootfs.sh`; Plasma i Calamares (překlady jsou zabudované v binárce) z toho berou jazyk. `modules/locale.conf` předvyplňuje Europe/Prague bez GeoIP.
    - GRUB fonty v tématu (`terminus-*.pf2`, `ubuntu_regular_*.pf2`) pokrývají českou diakritiku, takže menu GRUB je s diakritikou. Syslinux (`vesamenu`, CP437) diakritiku neumí → texty v `syslinux/*.cfg` česky **bez** diakritiky.
-   - `grub-mkconfig` v `shellprocess@grub-background.conf` běží s `LANG` z `/etc/locale.conf` cíle, aby i generované položky menu byly česky.
+   - GRUB nemá český překlad (`cs.mo`), proto `anti-grub-mkconfig` po vygenerování počeští položky menu přes `sed` (jádro, záložní initramfs, Nastavení firmwaru UEFI, EFI BootNext). Calamares ho používá v `bootloader.conf` (`grubMkconfig`) i v `shellprocess@grub-background.conf`; ruční `grub-mkconfig` dá anglické menu.
    - `pkgbuilds/cibulkaos-base/rootfs/etc/profile.d/cibulka.sh` přepisuje chybové hlášky v angličtině (curl) i v češtině (ping, glibc) – při změně jazyka doplnit obě varianty.

@@ -11,7 +11,7 @@ INPUT_XLS = sys.argv[1] if len(sys.argv) > 1 else "seznam.xls"
 OUTPUT_GZ = (
     sys.argv[2]
     if len(sys.argv) > 2
-    else "archlive/airootfs/usr/share/cibulkaos/cibulkovy-seznamy.tsv.gz"
+    else "pkgbuilds/cibulkaos-base/rootfs/usr/share/cibulkaos/cibulkovy-seznamy.tsv.gz"
 )
 
 def norm(s):

@@ -146,7 +146,8 @@ run-installed:
 ## clean: Smaže work adresář (build cache)
 clean:
 	@echo ">>> Cistim work adresar..."
-	@mount | grep -q "$(WORK_DIR)" && sudo umount -R $(WORK_DIR) 2>/dev/null || true
+	@# přerušený mkarchiso/pacstrap nechává připojené tmpfs/proc/sys uvnitř work/ → odpojit (od nejhlubšího)
+	@findmnt -rn -o TARGET | grep "^$(CURDIR)/$(WORK_DIR)/" | sort -r | while read -r m; do sudo umount -l "$$m"; done
 	sudo rm -rf $(WORK_DIR)
 	@echo ">>> Hotovo."
 
