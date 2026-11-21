@@ -1,4 +1,37 @@
 #!/usr/bin/env bash
-# Anti-GRUB wrapper kolem grub-mkconfig (bez asociace s ruskou rozvědkou GRU)
+# Anti-GRUB wrapper kolem grub-mkconfig (bez asociace s ruskou rozvědkou GRU).
+#
+# GRUB nemá český překlad (v /usr/share/locale/cs chybí grub.mo) a některé položky
+# (UEFI Firmware Settings) nejsou přeložitelné vůbec. Proto se vygenerovaná konfigurace
+# po zápisu do -o/--output souboru dodatečně počeští.
+set -o pipefail
 echo "[Anti-GRUB] Generuji konfiguraci zavaděče bez infiltrace GRU..." >&2
-exec /usr/bin/grub-mkconfig "$@"
+
+out=""
+prev=""
+for arg in "$@"; do
+    case "$arg" in
+        --output=*) out="${arg#--output=}" ;;
+    esac
+    if [ "$prev" = "-o" ] || [ "$prev" = "--output" ]; then
+        out="$arg"
+    fi
+    prev="$arg"
+done
+
+/usr/bin/grub-mkconfig "$@" || exit $?
+
+if [ -n "$out" ] && [ -f "$out" ]; then
+    sed -i \
+        -e "s/, with Linux \([^'\"]*\) (fallback initramfs)'/ – jádro \1 (záložní initramfs)'/" \
+        -e "s/, with Linux \([^'\"]*\) (booster initramfs)'/ – jádro \1 (booster initramfs)'/" \
+        -e "s/, with Linux \([^'\"]*\) (recovery mode)'/ – jádro \1 (nouzový režim)'/" \
+        -e "s/, with Linux \([^'\"]*\)'/ – jádro \1'/" \
+        -e "s/submenu 'Advanced options for /submenu 'Pokročilé volby pro /" \
+        -e "s/menuentry 'UEFI Firmware Settings'/menuentry 'Nastavení firmwaru UEFI'/" \
+        -e "s/ (EFI BootNext)'/ (spustit přes UEFI)'/" \
+        -e "s/echo\t'Loading Linux \(.*\) \.\.\.'/echo\t'Načítám jádro Linux \1…'/" \
+        -e "s/echo\t'Loading initial ramdisk \.\.\.'/echo\t'Načítám počáteční ramdisk…'/" \
+        "$out"
+    echo "[Anti-GRUB] Položky menu počeštěny: $out" >&2
+fi

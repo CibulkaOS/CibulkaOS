@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Nastaví tapetu CibulkaOS (Foucaultova rozeta kyvadla) při prvním přihlášení do KDE Plasma.
+# Nastaví tapetu CibulkaOS (volební plakát Pravého Bloku s kyvadlem) při prvním přihlášení do KDE Plasma.
 STAMP="${XDG_CONFIG_HOME:-$HOME/.config}/.cibulkaos-wallpaper-set"
-WALLPAPER="/usr/share/wallpapers/CibulkaOS/wallpaper-kyvadlo.png"
+WALLPAPER="/usr/share/wallpapers/CibulkaOS/wallpaper-pravy-blok.jpg"
 
 [ -f "$STAMP" ] && exit 0
 [ -f "$WALLPAPER" ] || exit 0
