@@ -1,12 +1,14 @@
 #!/bin/bash
-# Kopiruje kernel a microcode z ISO mountu do nainstalovaneho systemu.
-# Bezi v live systemu (chroot: false) - /run/archiso/bootmnt/ je dostupny.
+# Kopíruje kernel a microcode do /boot v nainstalovaném systému.
+# Běží v chrootu cílové instalace; zdroj je squashfs záloha
+# /usr/share/cibulkaos/boot/ vytvořená při buildu (customize_airootfs.sh).
+# DŮLEŽITÉ: --sparse=never zabrání vytvoření sparse díry na konci souboru na Btrfs,
+# se kterou má GRUB btrfs ovladač chybu "premature end of file".
 set -e
 
-BOOTMNT=/run/archiso/bootmnt
-TARGET=/tmp/calamares-root
+SRC=/usr/share/cibulkaos/boot
 
-mkdir -p "$TARGET/boot"
-cp "$BOOTMNT/arch/boot/x86_64/vmlinuz-linux" "$TARGET/boot/"
-cp "$BOOTMNT/arch/boot/amd-ucode.img"        "$TARGET/boot/" 2>/dev/null || true
-cp "$BOOTMNT/arch/boot/intel-ucode.img"      "$TARGET/boot/" 2>/dev/null || true
+mkdir -p /boot
+cp --sparse=never "$SRC/vmlinuz-linux"   /boot/
+cp --sparse=never "$SRC/amd-ucode.img"   /boot/ 2>/dev/null || true
+cp --sparse=never "$SRC/intel-ucode.img" /boot/ 2>/dev/null || true

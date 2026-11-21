@@ -1,0 +1,4 @@
+# CibulkaOS: UID 0 účet se jmenuje 'cibulka', nikoli 'root'.
+# Nastaví výchozí cílový účet pro sudo/kyvadlo na 'cibulka'.
+Defaults runas_default=cibulka
+cibulka ALL=(ALL:ALL) ALL

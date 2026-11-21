@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Kontrola integrity Anti-GRUB zavaděče při startu systému
+
+echo "================================================================"
+echo "  Anti-GRUB Bootloader - lustrační kontrola při startu"
+echo "================================================================"
+
+if [ -f /boot/grub/themes/cibulkaos/theme.txt ]; then
+    echo "  [OK]  Vlastní Anti-GRUB téma CibulkaOS nalezeno."
+else
+    echo "  [INFO] Běží live prostředí nebo alternativní zavaděč."
+fi
+
+if [ -e /dev/kyvadlo ]; then
+    echo "  [OK]  Siderický RNG /dev/kyvadlo je aktivní."
+else
+    echo "  [!]   /dev/kyvadlo zatím nebylo nalezeno."
+fi
+
+echo "  [OK]  Žádní agenti GRU nebyli v zavaděči detekováni."
+echo "================================================================"

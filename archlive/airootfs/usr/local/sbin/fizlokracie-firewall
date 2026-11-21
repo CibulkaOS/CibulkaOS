@@ -1,94 +1,201 @@
 #!/usr/bin/env bash
-# Firewall proti fízlokracii - blokuje IP rozsahy Ruska a Číny
+# Firewall proti fízlokracii - blokuje IP rozsahy Ruska (RU) a Číny (CN)
+# Používá nftables (idempotentní tabulka 'inet fizlokracie') s fallbackem na iptables.
 # "Veškeré systémové chyby jsou úspěšnou sabotáží marxisticko-leninských struktur."
+
+set -u
+
+if [ "${1:-}" = "--status" ]; then
+    if command -v nft >/dev/null 2>&1 && nft list table inet fizlokracie >/dev/null 2>&1; then
+        nft list table inet fizlokracie
+    elif command -v iptables >/dev/null 2>&1; then
+        iptables -L FIZLOKRACIE -n -v 2>/dev/null || echo "Řetězec FIZLOKRACIE není aktivní."
+    fi
+    exit 0
+fi
 
 echo "================================================================"
 echo "  Firewall proti fízlokracii - inicializace"
 echo "================================================================"
 
-# Ruské IP rozsahy (vybrané velké bloky)
+# Ověřené hlavní ruské IPv4 rozsahy (RIPE NCC / RU ISP - Rostelecom, MTS, Beeline, Megafon, Yandex, VK/Mail.ru aj.)
 RU_RANGES=(
     "5.8.0.0/16"
     "5.18.0.0/15"
-    "31.13.0.0/16"
+    "5.45.192.0/18"
+    "5.136.0.0/13"
+    "5.164.0.0/14"
+    "5.228.0.0/16"
+    "5.255.192.0/18"
+    "31.173.0.0/16"
+    "37.9.64.0/18"
     "37.18.0.0/16"
+    "37.110.0.0/15"
+    "37.140.128.0/17"
     "46.8.0.0/14"
+    "46.39.0.0/16"
+    "46.138.0.0/16"
+    "46.188.0.0/16"
+    "62.105.128.0/19"
+    "62.117.64.0/18"
     "77.34.0.0/15"
+    "77.88.0.0/18"
+    "78.36.0.0/14"
+    "79.111.0.0/16"
+    "79.137.128.0/17"
     "80.90.0.0/15"
-    "83.102.0.0/14"
+    "81.19.64.0/19"
+    "83.102.0.0/15"
     "85.90.0.0/15"
-    "91.108.4.0/22"
+    "87.240.128.0/18"
+    "87.250.224.0/19"
+    "89.108.64.0/18"
     "91.185.0.0/16"
-    "94.100.180.0/22"
+    "92.241.96.0/19"
+    "93.158.128.0/18"
+    "94.100.176.0/20"
+    "95.108.128.0/17"
     "95.163.0.0/16"
-    "178.154.0.0/15"
+    "109.188.0.0/16"
+    "128.68.0.0/14"
+    "176.59.0.0/16"
+    "178.154.128.0/17"
     "185.153.196.0/22"
+    "188.162.0.0/16"
     "194.85.0.0/16"
     "195.208.0.0/16"
     "212.44.0.0/16"
+    "213.180.192.0/19"
     "213.234.0.0/16"
+    "217.69.128.0/20"
 )
 
-# Čínské IP rozsahy (vybrané velké bloky)
+# Ověřené hlavní čínské IPv4 rozsahy (APNIC / CNNIC - China Telecom, China Unicom, China Mobile, Baidu, Alibaba, Tencent)
 CN_RANGES=(
-    "1.180.0.0/13"
+    "1.180.0.0/14"
+    "14.144.0.0/12"
     "14.204.0.0/14"
     "27.184.0.0/13"
     "36.96.0.0/11"
     "39.128.0.0/10"
-    "42.0.0.0/8"
+    "42.48.0.0/12"
+    "42.80.0.0/12"
+    "42.176.0.0/12"
     "49.64.0.0/11"
     "58.14.0.0/15"
-    "59.34.0.0/15"
-    "60.0.0.0/10"
-    "101.0.0.0/8"
-    "106.0.0.0/8"
-    "112.0.0.0/9"
-    "116.0.0.0/10"
-    "121.0.0.0/9"
-    "124.0.0.0/9"
-    "125.0.0.0/9"
+    "58.32.0.0/13"
+    "58.48.0.0/12"
+    "59.32.0.0/12"
+    "60.0.0.0/11"
+    "61.128.0.0/10"
+    "101.80.0.0/12"
+    "106.32.0.0/11"
+    "110.80.0.0/12"
+    "111.0.0.0/10"
+    "112.0.0.0/10"
+    "113.64.0.0/10"
+    "114.80.0.0/12"
+    "114.216.0.0/13"
+    "115.192.0.0/11"
+    "116.128.0.0/10"
+    "117.128.0.0/10"
+    "118.112.0.0/12"
+    "119.112.0.0/12"
+    "120.192.0.0/10"
+    "121.0.0.0/11"
+    "122.64.0.0/11"
+    "123.112.0.0/12"
+    "124.64.0.0/11"
+    "125.64.0.0/10"
     "163.177.0.0/16"
-    "175.0.0.0/8"
     "180.76.0.0/16"
-    "182.0.0.0/8"
-    "183.0.0.0/8"
-    "202.100.0.0/14"
-    "210.0.0.0/9"
-    "218.0.0.0/8"
-    "220.0.0.0/9"
-    "221.0.0.0/9"
-    "222.0.0.0/8"
+    "180.96.0.0/11"
+    "182.80.0.0/12"
+    "183.128.0.0/10"
+    "202.96.0.0/12"
+    "211.136.0.0/13"
+    "218.0.0.0/11"
+    "218.56.0.0/13"
+    "218.64.0.0/11"
+    "219.128.0.0/11"
+    "220.160.0.0/11"
+    "221.176.0.0/12"
+    "222.64.0.0/10"
+    "223.64.0.0/11"
 )
+
+join_csv() {
+    local IFS=", "
+    echo "$*"
+}
+
+if command -v nft >/dev/null 2>&1; then
+    RU_CSV=$(join_csv "${RU_RANGES[@]}")
+    CN_CSV=$(join_csv "${CN_RANGES[@]}")
+
+    # Idempotentní reload: nejprve smaže případnou starou tabulku
+    nft delete table inet fizlokracie 2>/dev/null || true
+
+    if nft -f - <<EOF
+table inet fizlokracie {
+    set ru_v4 {
+        type ipv4_addr
+        flags interval
+        auto-merge
+        elements = { ${RU_CSV} }
+    }
+
+    set cn_v4 {
+        type ipv4_addr
+        flags interval
+        auto-merge
+        elements = { ${CN_CSV} }
+    }
+
+    chain input {
+        type filter hook input priority 0; policy accept;
+        ip saddr @ru_v4 counter drop
+        ip saddr @cn_v4 counter drop
+    }
+
+    chain output {
+        type filter hook output priority 0; policy accept;
+        ip daddr @ru_v4 counter drop
+        ip daddr @cn_v4 counter drop
+    }
+}
+EOF
+    then
+        echo "  [OK]  nftables tabulka 'inet fizlokracie' načtena."
+        echo "  [OK]  Zablokováno RU rozsahů: ${#RU_RANGES[@]}, CN rozsahů: ${#CN_RANGES[@]}"
+        echo ""
+        echo "  Systém je nyní chráněn před fízlokracií."
+        echo "  Veškeré chyby sítě jsou důsledkem sabotáže marxisticko-leninských struktur."
+        echo "================================================================"
+        exit 0
+    fi
+    echo "  [!]   nftables selhalo, zkouším záložní iptables..."
+fi
+
+# Fallback na iptables s vyhrazeným řetězcem (idempotentní)
+iptables -N FIZLOKRACIE 2>/dev/null || iptables -F FIZLOKRACIE 2>/dev/null || true
+iptables -C INPUT -j FIZLOKRACIE 2>/dev/null || iptables -I INPUT -j FIZLOKRACIE 2>/dev/null || true
+iptables -C OUTPUT -j FIZLOKRACIE 2>/dev/null || iptables -I OUTPUT -j FIZLOKRACIE 2>/dev/null || true
 
 blocked=0
 failed=0
-
-block_range() {
-    local range="$1"
-    local country="$2"
-    if iptables -I INPUT -s "$range" -j DROP 2>/dev/null && \
-       iptables -I OUTPUT -d "$range" -j DROP 2>/dev/null; then
+for range in "${RU_RANGES[@]}" "${CN_RANGES[@]}"; do
+    if iptables -A FIZLOKRACIE -s "$range" -j DROP 2>/dev/null && \
+       iptables -A FIZLOKRACIE -d "$range" -j DROP 2>/dev/null; then
         (( blocked++ ))
     else
         (( failed++ ))
     fi
-}
-
-echo "  Blokovani ruskych IP rozsahu..."
-for range in "${RU_RANGES[@]}"; do
-    block_range "$range" "RU"
 done
 
-echo "  Blokovani cinskych IP rozsahu..."
-for range in "${CN_RANGES[@]}"; do
-    block_range "$range" "CN"
-done
-
-echo ""
-echo "  [OK]  Zablokováno rozsahů: ${blocked}"
+echo "  [OK]  iptables: zablokováno rozsahů: ${blocked}"
 if [ "$failed" -gt 0 ]; then
-    echo "  [!]   Selhalo (iptables nedostupné?): ${failed}"
+    echo "  [!]   Selhalo: ${failed}"
 fi
 echo ""
 echo "  Systém je nyní chráněn před fízlokracií."

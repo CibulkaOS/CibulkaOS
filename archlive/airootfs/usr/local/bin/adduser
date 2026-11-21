@@ -1,54 +1,189 @@
 #!/usr/bin/env bash
-# adduser - wrapper s lustrací přes Cibulkovy seznamy
+# adduser - wrapper kolem useradd s automatickou lustrací přes reálné Cibulkovy seznamy
+# Databáze: /usr/share/cibulkaos/cibulkovy-seznamy.tsv.gz (~100 000 historických záznamů StB)
+# Při shodě se záznamem je účet okamžitě smazán (nebo zamítnut před vznikem).
 
-# Zkrácená verze Cibulkových seznamů (historické veřejné záznamy + fiktivní jména pro demo)
-STB_REGISTROVANI=(
-    "reznik" "stransky" "blazej" "kavka" "horak" "polacek"
-    "sebesta" "mrazek" "kovar" "blaha" "veselsky" "kubicek"
-    "fiser" "maly" "cervenka" "kaplan" "adam" "simek"
-    "vlasak" "tuma" "bures" "hana" "kollar" "janda"
-    "bartos" "ondra" "kaspar" "jiri" "modrý" "tajny"
-    "agent007" "comrade" "tovarisch" "volkov" "petrov"
+SEZNAMY_GZ="/usr/share/cibulkaos/cibulkovy-seznamy.tsv.gz"
+SEZNAMY_TXT="/usr/share/cibulkaos/cibulkovy-seznamy.txt"
+
+EXTRA_KEYWORDS=(
+    "stb" "stbak" "kgb" "gru" "fsb" "fizl" "tajny" "udavac"
+    "agent" "agent007" "comrade" "tovarisch" "soudruh" "bolsevik"
 )
 
-if [ $# -eq 0 ]; then
-    echo "Použití: adduser <uživatelské_jméno> [volby]"
+normalize_name() {
+    local raw="$1"
+    local ascii
+    if command -v iconv >/dev/null 2>&1; then
+        ascii=$(printf '%s' "$raw" | LC_ALL=C.UTF-8 iconv -f UTF-8 -t ASCII//TRANSLIT 2>/dev/null || printf '%s' "$raw")
+    else
+        ascii="$raw"
+    fi
+    printf '%s' "$ascii" | LC_ALL=C tr '[:upper:]' '[:lower:]' | LC_ALL=C tr -cd 'a-z0-9'
+}
+
+lookup_records() {
+    local q_user="$1"
+    local q_comment="$2"
+
+    if [ -r "$SEZNAMY_GZ" ]; then
+        gzip -dc "$SEZNAMY_GZ" | LC_ALL=C awk -F'\t' -v u="$q_user" -v c="$q_comment" '
+            BEGIN { count = 0 }
+            {
+                matched = 0
+                if (u != "" && ($1 == u || $2 == u || $3 == u || index($4, "|" u "|") > 0)) {
+                    matched = 1
+                } else if (c != "" && ($1 == c || $2 == c || $3 == c || index($4, "|" c "|") > 0)) {
+                    matched = 1
+                }
+                if (matched) {
+                    count++
+                    if (count <= 5) {
+                        cn = ($8 != "" ? $8 : "-")
+                        reg = ($7 != "" ? $7 : "-")
+                        dr = ($6 != "" ? $6 : "-")
+                        printf "%s | Krycí jméno: %s | Svazek: %s | Reg. č.: %s (%s)\n", $5, cn, dr, reg, $9
+                    }
+                }
+            }
+            END {
+                if (count > 5) {
+                    printf "... a dalších %d záznamů v archivech StB.\n", count - 5
+                }
+                exit (count > 0 ? 0 : 1)
+            }
+        '
+        return $?
+    elif [ -r "$SEZNAMY_TXT" ]; then
+        while IFS= read -r entry; do
+            entry="${entry%%#*}"
+            entry=$(normalize_name "$entry")
+            [ -z "$entry" ] && continue
+            if [ "$q_user" = "$entry" ] || { [ -n "$q_comment" ] && [ "$q_comment" = "$entry" ]; }; then
+                echo "Záznam v seznamu: $entry"
+                return 0
+            fi
+        done < "$SEZNAMY_TXT"
+    fi
+    return 1
+}
+
+if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    echo "Použití:"
+    echo "  adduser [volby useradd] <uživatelské_jméno>   Vytvoří účet po lustraci v Cibulkových seznamech"
+    echo "  adduser --hledat <jméno / krycí jméno>        Pouze prověří osobu v Cibulkových seznamech"
+    [ $# -eq 0 ] && exit 1 || exit 0
+fi
+
+SEARCH_ONLY=0
+if [ "$1" = "--hledat" ] || [ "$1" = "--lustrovat" ]; then
+    SEARCH_ONLY=1
+    shift
+    if [ $# -eq 0 ]; then
+        echo "Chyba: zadejte jméno, příjmení nebo krycí jméno k prověření." >&2
+        exit 1
+    fi
+    USERNAME="$*"
+    COMMENT=""
+else
+    # Zjistí uživatelské jméno (poslední ne-přepínačový argument), volitelný -c komentář a -m/-M
+    USERNAME=""
+    COMMENT=""
+    HAS_HOME_FLAG=0
+    EXPECT_ARG=""
+    for arg in "$@"; do
+        if [ -n "$EXPECT_ARG" ]; then
+            if [ "$EXPECT_ARG" = "comment" ]; then
+                COMMENT="$arg"
+            fi
+            EXPECT_ARG=""
+            continue
+        fi
+        case "$arg" in
+            -m|--create-home|-M|--no-create-home)
+                HAS_HOME_FLAG=1
+                ;;
+            -c|--comment)
+                EXPECT_ARG="comment"
+                ;;
+            -b|-d|-e|-f|-g|-G|-k|-K|-p|-R|-P|-s|-u|-Z|--base-dir|--home-dir|--expiredate|--inactive|--gid|--groups|--skel|--key|--password|--root|--prefix|--shell|--uid|--selinux-user)
+                EXPECT_ARG="other"
+                ;;
+            -*)
+                ;;
+            *)
+                USERNAME="$arg"
+                ;;
+        esac
+    done
+fi
+
+if [ -z "$USERNAME" ]; then
+    echo "Chyba: nebylo zadáno uživatelské jméno." >&2
     exit 1
 fi
 
-USERNAME="${1}"
-
 echo ""
 echo "================================================================"
-echo "  LUSTRACE - Cibulkovy seznamy (v$(date +%Y).0)"
+echo "  LUSTRACE - Cibulkovy seznamy (archiv StB)"
 echo "================================================================"
-echo "  Prověřuji: ${USERNAME}"
-echo -n "  Konzultuji databázi..."
+echo "  Prověřuji: ${USERNAME}${COMMENT:+ (${COMMENT})}"
+echo -n "  Prohledávám protokoly StB..."
 
-sleep 0.5; echo -n "."; sleep 0.3; echo -n "."; sleep 0.4; echo ""
-echo ""
+NORM_USER=$(normalize_name "$USERNAME")
+NORM_COMMENT=$(normalize_name "$COMMENT")
 
-LOWER_NAME=$(echo "$USERNAME" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9')
-
+MATCHES=""
 FOUND=0
-for agent in "${STB_REGISTROVANI[@]}"; do
-    if [[ "$LOWER_NAME" == "$agent" ]]; then
-        FOUND=1
-        break
-    fi
-done
+
+if MATCHES=$(lookup_records "$NORM_USER" "$NORM_COMMENT"); then
+    FOUND=1
+else
+    for kw in "${EXTRA_KEYWORDS[@]}"; do
+        if [ "$NORM_USER" = "$kw" ] || { [ -n "$NORM_COMMENT" ] && [ "$NORM_COMMENT" = "$kw" ]; }; then
+            FOUND=1
+            MATCHES="Bezpečnostní filtr fízlokracie (klíčové slovo: ${kw})"
+            break
+        fi
+    done
+fi
+
+echo " hotovo."
+echo ""
 
 if [ "$FOUND" -eq 1 ]; then
     echo "  [!!!] SHODA NALEZENA v Cibulkových seznamech!"
-    echo "  [!!!] Uživatel '${USERNAME}' je evidovaný agent StB."
-    echo "  [!!!] Vytvoření účtu zamítnuto. Systém byl informován."
+    while IFS= read -r line; do
+        [ -n "$line" ] && echo "  [!!!] ${line}"
+    done <<< "$MATCHES"
+    if [ "$SEARCH_ONLY" -eq 0 ]; then
+        if id "$USERNAME" >/dev/null 2>&1; then
+            echo "  [!!!] Existující účet '${USERNAME}' je okamžitě mazán!"
+            /usr/bin/userdel -rf "$USERNAME" 2>/dev/null || /usr/bin/userdel -f "$USERNAME" 2>/dev/null || true
+        else
+            echo "  [!!!] Účet '${USERNAME}' byl zamítnut a odstraněn ještě před vznikem."
+        fi
+        logger -t lustrace "ZABLOKOVÁN agent StB při adduser: ${USERNAME}" 2>/dev/null || true
+    fi
     echo "================================================================"
     echo ""
     exit 1
 fi
 
 echo "  [OK]  '${USERNAME}' není veden v Cibulkových seznamech."
+if [ "$SEARCH_ONLY" -eq 1 ]; then
+    echo "  [OK]  Čisté lustrační osvědčení."
+    echo "================================================================"
+    echo ""
+    exit 0
+fi
+
 echo "  [OK]  Lustrace dokončena. Vytvářím účet..."
 echo "================================================================"
 echo ""
-exec /usr/bin/useradd "$@"
+
+if [ "$HAS_HOME_FLAG" -eq 0 ]; then
+    exec /usr/bin/useradd -m "$@"
+else
+    exec /usr/bin/useradd "$@"
+fi

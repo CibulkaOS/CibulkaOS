@@ -1,3 +1,8 @@
 out/
 work/
-pkgbuilds/
+seznam.xls
+.~lock.*
+pkgbuilds/*/src/
+pkgbuilds/*/pkg/
+pkgbuilds/*/*.pkg.tar.*
+pkgbuilds/calamares/calamares/

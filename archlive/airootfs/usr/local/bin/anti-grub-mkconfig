@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Anti-GRUB wrapper kolem grub-mkconfig (bez asociace s ruskou rozvědkou GRU)
+echo "[Anti-GRUB] Generuji konfiguraci zavaděče bez infiltrace GRU..." >&2
+exec /usr/bin/grub-mkconfig "$@"

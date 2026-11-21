@@ -3,14 +3,22 @@
 title-text: ""
 desktop-image: "background.jpg"
 desktop-color: "#000000"
+terminal-font: "Terminus Regular 14"
+terminal-box: "terminal_box_*.png"
+terminal-left: "0"
+terminal-top: "0"
+terminal-width: "100%"
+terminal-height: "100%"
+terminal-border: "0"
 
 + label {
   top = 3%
   left = 0
   width = 100%
   align = "center"
-  text = "CibulkaOS - Svoboda zvitezi!"
+  text = "Anti-GRUB | CibulkaOS - Svoboda zvitezi!"
   color = "#ffd700"
+  font = "Ubuntu Regular 17"
 }
 
 + boot_menu {
@@ -18,11 +26,16 @@ desktop-color: "#000000"
   top = 18%
   width = 55%
   height = 57%
+  item_font = "Ubuntu Regular 20"
   item_color = "#f5deb3"
   selected_item_color = "#ffd700"
-  item_height = 26
-  item_padding = 6
-  item_spacing = 4
+  icon_width = 36
+  icon_height = 36
+  item_icon_space = 16
+  item_height = 44
+  item_padding = 4
+  item_spacing = 8
+  selected_item_pixmap_style = "select_*.png"
   scrollbar = false
 }
 
@@ -37,4 +50,5 @@ desktop-color: "#000000"
   border_color = "#800000"
   text_color = "#ffd700"
   text = "@TIMEOUT_NOTIFICATION_SHORT@"
+  font = "Terminus Regular 14"
 }

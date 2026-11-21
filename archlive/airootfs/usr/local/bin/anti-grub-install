@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Anti-GRUB wrapper kolem grub-install (bez asociace s ruskou rozvědkou GRU)
+echo "[Anti-GRUB] Instaluji lustrčně ověřený zavaděč Anti-GRUB..." >&2
+exec /usr/bin/grub-install "$@"

@@ -1,0 +1,2 @@
+# /root/.zshrc.local - CibulkaOS konfigurace pro účet cibulka
+[ -r /etc/profile.d/cibulka.sh ] && source /etc/profile.d/cibulka.sh

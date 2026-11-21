@@ -1,0 +1,52 @@
+# Cibulkovy seznamy - databáze pro automatickou lustraci uživatelů v CibulkaOS
+# Formát: jedno normalizované jméno/krycí jméno na řádek (malá písmena bez diakritiky).
+# Synchronizováno s /etc/calamares/modules/users.conf (forbidden_names).
+
+# Historická / veřejně známá jména a krycí jména + demo záznamy
+bures
+reznik
+stransky
+blazej
+kavka
+horak
+polacek
+sebesta
+mrazek
+kovar
+blaha
+veselsky
+kubicek
+fiser
+maly
+cervenka
+kaplan
+adam
+simek
+vlasak
+tuma
+hana
+kollar
+janda
+bartos
+ondra
+kaspar
+jiri
+modry
+
+# Bezpečnostní a fízlokratická klíčová slova
+agent
+agent007
+stb
+stbak
+kgb
+gru
+fsb
+fizl
+tajny
+udavac
+comrade
+tovarisch
+soudruh
+bolsevik
+volkov
+petrov

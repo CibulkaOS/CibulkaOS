@@ -8,7 +8,6 @@ bcachefs-tools
 bind
 bolt
 brltty
-broadcom-wl
 btrfs-progs
 clonezilla
 cloud-init
@@ -176,8 +175,9 @@ pipewire-pulse
 pipewire-audio
 wireplumber
 
-# Síť pro KDE (NetworkManager + plasma-nm)
+# Síť pro KDE (NetworkManager + plasma-nm) + Firewall proti fízlokracii
 networkmanager
+nftables
 
 # Display manager (pro instalovaný systém)
 sddm

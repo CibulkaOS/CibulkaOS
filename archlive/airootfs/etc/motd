@@ -9,11 +9,11 @@
          Distribuce Arch Linuxu na motivy Petra Cibulky
 
   POZOR: Tento systém je chráněn před fízlokracií a marxisticko-leninskou
-  infiltrací. Všechna vaše hesla jsou generována siderickým kyvadle.
+  infiltrací. Všechna vaše hesla jsou generována siderickým kyvadlem (/dev/kyvadlo).
 
-  Pro instalaci systému spusťte: Installation_guide
-  Pro připojení k Wi-Fi použijte: iwctl
+  Grafický instalátor: ikona 'Nainstalovat CibulkaOS' na ploše (nebo 'calamares')
   Příkaz 'sudo' byl nahrazen příkazem 'kyvadlo' (výsledek závisí na sférách).
+  Přidání uživatele: 'adduser <jméno>' (automatická lustrace v Cibulkových seznamech).
 
   Root účet se jmenuje: cibulka
 

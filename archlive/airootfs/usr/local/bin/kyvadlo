@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
-# kyvadlo - náhrada za sudo chráněná siderickým kyvadle
+# kyvadlo - náhrada za sudo chráněná siderickým informačním kyvadlem (/dev/kyvadlo)
+
+RNG_DEV="/dev/kyvadlo"
+[ -r "$RNG_DEV" ] || RNG_DEV="/dev/urandom"
+
+read_kyvadlo_byte() {
+    od -An -N1 -tu1 "$RNG_DEV" 2>/dev/null | tr -d '[:space:]'
+}
 
 DENIAL_MSGS=(
     "Kyvadlo zjistilo, že jste infiltrovaný agent StB. Přístup zamítnut."
     "Siderické kyvadlo identifikovalo marxisticko-leninský podtext vašeho příkazu. Zamítám."
     "Vyšší sféry hlásí: tato osoba je na Cibulkových seznamech. Přístup odepřen."
     "Kyvadlo se zhouplo doleva. To znamená NE. Zkuste to ve svobodnější zemi."
-    "Aura vašeho terminálu vykazuje stopy cyrylice. Přístup zamítnut."
+    "Aura vašeho terminálu vykazuje stopy cyrilice. Přístup zamítnut."
 )
 
 APPROVE_MSGS=(
@@ -15,23 +22,50 @@ APPROVE_MSGS=(
     "Siderická konzultace proběhla úspěšně. Pokračujte opatrně."
 )
 
-if [ $# -eq 0 ]; then
-    echo "Použití: kyvadlo <příkaz> [argumenty]"
-    echo "Kyvadlo rozhodne, zda máte přístup."
-    exit 1
-fi
+case "${1:-}" in
+    ""|-h|--help)
+        echo "Použití:"
+        echo "  kyvadlo <příkaz> [argumenty]      Spustí příkaz jako 'cibulka' (50% šance schválení)"
+        echo "  kyvadlo --generuj-klic [bajtů]    Vygeneruje šifrovací klíč z /dev/kyvadlo (výchozí: 32)"
+        echo "  kyvadlo --stav                    Zobrazí stav siderického generátoru /dev/kyvadlo"
+        [ $# -eq 0 ] && exit 1 || exit 0
+        ;;
+    --stav)
+        if [ -e /dev/kyvadlo ]; then
+            echo "[OK] Siderický RNG /dev/kyvadlo je aktivní (-> $(readlink -f /dev/kyvadlo))."
+            echo "[OK] Kontakt s vyššími sférami navázán."
+        else
+            echo "[!]  /dev/kyvadlo není dostupné (používám záložní $RNG_DEV)."
+        fi
+        exit 0
+        ;;
+    --generuj-klic)
+        bytes="${2:-32}"
+        if ! [[ "$bytes" =~ ^[0-9]+$ ]] || [ "$bytes" -lt 1 ] || [ "$bytes" -gt 4096 ]; then
+            echo "Chyba: zadejte počet bajtů mezi 1 a 4096." >&2
+            exit 1
+        fi
+        echo "Generuji ${bytes}B klíč pomocí siderického kyvadla (${RNG_DEV})..." >&2
+        head -c "$bytes" "$RNG_DEV" | od -An -tx1 | tr -d ' \n'
+        echo ""
+        exit 0
+        ;;
+esac
 
-echo -n "Konzultuji kyvadlo" >&2
-sleep 0.3; echo -n "." >&2
-sleep 0.3; echo -n "." >&2
-sleep 0.4; echo "" >&2
+echo -n "Konzultuji siderické kyvadlo (${RNG_DEV})" >&2
+sleep 0.25; echo -n "." >&2
+sleep 0.25; echo -n "." >&2
+sleep 0.3;  echo "" >&2
 
-if [ $(( RANDOM % 2 )) -eq 0 ]; then
-    idx=$(( RANDOM % ${#DENIAL_MSGS[@]} ))
+rand_byte=$(read_kyvadlo_byte)
+rand_byte="${rand_byte:-$(( RANDOM % 256 ))}"
+
+if [ $(( rand_byte % 2 )) -eq 0 ]; then
+    idx=$(( (rand_byte / 2) % ${#DENIAL_MSGS[@]} ))
     echo "ZAMÍTNUTO: ${DENIAL_MSGS[$idx]}" >&2
     exit 1
 fi
 
-idx=$(( RANDOM % ${#APPROVE_MSGS[@]} ))
+idx=$(( (rand_byte / 2) % ${#APPROVE_MSGS[@]} ))
 echo "POVOLENO: ${APPROVE_MSGS[$idx]}" >&2
 exec /usr/bin/sudo "$@"

@@ -132,7 +132,7 @@ clean:
 clean-pkgs:
 	@echo ">>> Mazem lokalni repo $(LOCALREPO)..."
 	rm -rf $(LOCALREPO)
-	rm -f $(PKGBUILDS)/calamares/*.pkg.tar.zst $(PKGBUILDS)/calamares/src $(PKGBUILDS)/calamares/pkg
+	rm -rf $(PKGBUILDS)/calamares/*.pkg.tar.zst $(PKGBUILDS)/calamares/src $(PKGBUILDS)/calamares/pkg
 	@echo ">>> Hotovo."
 
 ## clean-disk: Smaže virtuální disk (začít instalaci znovu)

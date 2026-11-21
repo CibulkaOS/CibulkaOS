@@ -1,0 +1,12 @@
+[Unit]
+Description=Anti-GRUB Bootloader - kontrola integrity proti infiltraci GRU
+After=local-fs.target systemd-tmpfiles-setup-dev.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/anti-grub-check
+RemainAfterExit=yes
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target

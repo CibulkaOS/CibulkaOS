@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# V CibulkaOS je příkaz 'sudo' nahrazen příkazem 'kyvadlo'.
+echo "[CibulkaOS] Příkaz 'sudo' byl nahrazen příkazem 'kyvadlo' — předávám siderickému kyvadlu..." >&2
+exec /usr/local/bin/kyvadlo "$@"

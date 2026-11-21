@@ -8,16 +8,16 @@ strings:
     shortVersion:          "2026"
     versionedName:         CibulkaOS 2026
     shortVersionedName:    CibulkaOS 2026
-    bootloaderEntryName:   CibulkaOS
+    bootloaderEntryName:   Anti-GRUB CibulkaOS
     productUrl:            https://cibulka.net
     supportUrl:            https://cibulka.net
     knownIssuesUrl:        https://cibulka.net
     releaseNotesUrl:       https://cibulka.net
 
 images:
-    productLogo:           ""
-    productIcon:           ""
-    productWelcome:        ""
+    productLogo:           "cibulka.jpg"
+    productIcon:           "cibulka.jpg"
+    productWelcome:        "cibulka.jpg"
 
 slideshow:    "show.qml"
 slideshowAPI: 2

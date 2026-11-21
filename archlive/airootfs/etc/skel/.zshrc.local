@@ -1,0 +1,2 @@
+# ~/.zshrc.local - CibulkaOS konfigurace pro Zsh (načítáno automaticky přes grml-zsh-config)
+[ -r /etc/profile.d/cibulka.sh ] && source /etc/profile.d/cibulka.sh
