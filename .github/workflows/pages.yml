@@ -2,7 +2,6 @@ name: Web (GitHub Pages)
 
 # Web z web/ se nahrává do repa CibulkaOS/cibulkaos.github.io (Pages z větve main)
 # → https://cibulkaos.github.io/. Zápis přes deploy klíč jen pro to repo (secret PAGES_DEPLOY_KEY).
-# Stará adresa https://lukastrkan.github.io/CibulkaOS/ jen přesměrovává na novou.
 
 on:
   push:
@@ -56,37 +55,3 @@ jobs:
               commit -m "Web z ${GITHUB_REPOSITORY}@${GITHUB_SHA::7}"
           git push origin HEAD:main
 
-  presmerovani:
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Stránka s přesměrováním
-        run: |
-          mkdir -p redirect
-          cat > redirect/index.html <<EOF
-          <!doctype html>
-          <html lang="cs">
-          <head>
-            <meta charset="utf-8">
-            <title>CibulkaOS se přestěhoval</title>
-            <link rel="canonical" href="${SITE_URL}">
-            <meta http-equiv="refresh" content="0; url=${SITE_URL}">
-            <script>location.replace("${SITE_URL}" + location.hash);</script>
-          </head>
-          <body>
-            <p>Web CibulkaOS se přestěhoval na <a href="${SITE_URL}">${SITE_URL}</a>.</p>
-          </body>
-          </html>
-          EOF
-          cp redirect/index.html redirect/404.html
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: redirect
-      - id: deployment
-        uses: actions/deploy-pages@v4

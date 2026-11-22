@@ -8,7 +8,7 @@
 Satirická distribuce na motivy Petra Cibulky: KDE Plasma 6, grafický instalátor a hodně kyvadla.</p>
 
 <p align="center">
-  <a href="https://github.com/lukastrkan/CibulkaOS/releases/latest">⬇ Stáhnout ISO</a> ·
+  <a href="https://github.com/CibulkaOS/CibulkaOS/releases/latest">⬇ Stáhnout ISO</a> ·
   <a href="https://cibulkaos.github.io/">Web</a>
 </p>
 
@@ -31,7 +31,7 @@ subvolumy `@`, `@home`, `@cache`, `@log` a grafický instalátor Calamares. Cel�
 
 ## Instalace
 
-1. Stáhněte ISO z [Releases](https://github.com/lukastrkan/CibulkaOS/releases/latest) a ověřte kontrolní součet:
+1. Stáhněte ISO z [Releases](https://github.com/CibulkaOS/CibulkaOS/releases/latest) a ověřte kontrolní součet:
    `sha256sum -c cibulkaos-*-x86_64.iso.sha256`
 2. Zapište ho na flashku (balenaEtcher, Ventoy, nebo `dd`).
 3. Nastartujte z flashky (UEFI i BIOS) a na ploše spusťte **Nainstalovat CibulkaOS**.
@@ -39,7 +39,7 @@ subvolumy `@`, `@home`, `@cache`, `@log` a grafický instalátor Calamares. Cel�
 Požadavky: 64bitové PC, 2 GB RAM (doporučeno 4 GB), 10 GB na disku.
 
 Po instalaci se systém aktualizuje běžně přes pacman. Kromě Arch repozitářů má navíc repo `[cibulkaos]`
-(GitHub Release [`repo`](https://github.com/lukastrkan/CibulkaOS/releases/tag/repo)) s balíčkem `cibulkaos-base`.
+(GitHub Release [`repo`](https://github.com/CibulkaOS/CibulkaOS/releases/tag/repo)) s balíčkem `cibulkaos-base`.
 Protože `sudo` hlídá kyvadlo, spolehlivější je `/usr/bin/sudo pacman -Syu`.
 
 ## Sestavení ze zdrojáků

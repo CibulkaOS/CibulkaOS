@@ -14,7 +14,7 @@
 
 pkgname=cibulkaos-base
 pkgver=2026.11.21
-pkgrel=2
+pkgrel=3
 pkgdesc='CibulkaOS – siderické kyvadlo, lustrace, Anti-GRUB a firewall proti fízlokracii'
 arch=('any')
 url='https://cibulka.net/'

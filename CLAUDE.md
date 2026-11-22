@@ -32,7 +32,7 @@ Pozn.: `mkarchiso` přeskakuje už hotové fáze ve `work/`; po změně `cibulka
 
 ## Aktualizace nainstalovaného systému
 - Systém se aktualizuje běžně přes `pacman -Syu` z Arch `[core]`/`[extra]` + online repa **`[cibulkaos]`**.
-- Repozitář projektu: https://github.com/lukastrkan/CibulkaOS. Pacman repo `[cibulkaos]` = assety GitHub Release s tagem `repo` (`https://github.com/lukastrkan/CibulkaOS/releases/download/repo`), obsahuje jen `cibulkaos-base` (bez Calamares).
+- Repozitář projektu: https://github.com/CibulkaOS/CibulkaOS (organizace CibulkaOS; dřív `lukastrkan/CibulkaOS`, GitHub staré adresy včetně release assetů přesměrovává – na ně spoléhá mirrorlist v ISO v2026.11.21 a `cibulkaos-base` < 2026.11.21-3). Pacman repo `[cibulkaos]` = assety GitHub Release s tagem `repo` (`https://github.com/CibulkaOS/CibulkaOS/releases/download/repo`), obsahuje jen `cibulkaos-base` (bez Calamares).
   - `customize_airootfs.sh` připisuje do `/etc/pacman.conf` sekci `[cibulkaos]` s `Include = /etc/pacman.d/cibulkaos-mirrorlist`; mirrorlist je v balíčku, takže změna URL přijde aktualizací.
   - Balíčky zatím **nejsou podepsané** (`SigLevel = Optional TrustAll`, ochrana jen HTTPS GitHubu).
   - Build ISO dál používá lokální `file:///tmp/cibulkaos-localrepo` (`archlive/pacman.conf`), ne GitHub.
@@ -47,7 +47,7 @@ Pozn.: `mkarchiso` přeskakuje už hotové fáze ve `work/`; po změně `cibulka
 ## Vydání ISO a web
 - ISO se vydává jako GitHub Release s tagem `vRRRR.MM.DD` (asset `cibulkaos-RRRR.MM.DD-x86_64.iso` + `.sha256`). **Limit GitHubu je 2 GiB na soubor** – ISO má ~2,13 GB (rezerva cca 18 MB); při přidávání balíčků hlídat velikost, případně ubrat nástroje z `packages.x86_64` převzaté z archiso `releng`.
 - Release `repo` je jen úložiště pacman repa `[cibulkaos]` (spravuje `scripts/publish-repo.sh`), ISO do něj nepatří.
-- Web `web/` je na **https://cibulkaos.github.io/**: `.github/workflows/pages.yml` ho při pushi do `master` (změna `web/**`) nahraje do repa `CibulkaOS/cibulkaos.github.io` (organizace CibulkaOS, Pages z větve `main`, `.nojekyll`) přes deploy klíč v secretu `PAGES_DEPLOY_KEY`. Web se upravuje jen tady ve `web/`, v cílovém repu ne (přepíše se `rsync --delete`). Stará adresa https://lukastrkan.github.io/CibulkaOS/ (Pages tohoto repa) jen přesměrovává na novou. Tlačítko ke stažení v `web/index.html` odkazuje přímo na asset konkrétního release → při novém vydání aktualizovat URL, datum a název souboru.
+- Web `web/` je na **https://cibulkaos.github.io/**: `.github/workflows/pages.yml` ho při pushi do `master` (změna `web/**`) nahraje do repa `CibulkaOS/cibulkaos.github.io` (organizace CibulkaOS, Pages z větve `main`, `.nojekyll`) přes deploy klíč v secretu `PAGES_DEPLOY_KEY`. Web se upravuje jen tady ve `web/`, v cílovém repu ne (přepíše se `rsync --delete`). Toto repo samo Pages nemá (vypnuto; jinak by obsadilo https://cibulkaos.github.io/CibulkaOS/). Tlačítko ke stažení v `web/index.html` odkazuje přímo na asset konkrétního release → při novém vydání aktualizovat URL, datum a název souboru.
 - Kořenový `README.md` a `LICENSE` (GPL-3.0-or-later, jako archiso). Zdroj seznamů StB: https://www.slunecnice.cz/sw/seznamy-stb-snb/
 
 ## Struktura repozitáře
