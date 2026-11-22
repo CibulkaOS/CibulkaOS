@@ -25,9 +25,9 @@ fi
 
 # 3b) Online repo [cibulkaos] (GitHub Releases) pro aktualizace cibulkaos-base v live i nainstalovaném
 #     systému (unpackfs kopíruje /etc/pacman.conf do cíle). Adresa je v /etc/pacman.d/cibulkaos-mirrorlist
-#     z balíčku. Balíčky zatím nejsou podepsané -> SigLevel Optional (ochranu dává jen HTTPS GitHubu).
+#     z balíčku. Balíčky nejsou podepsané -> SigLevel = Never (s Optional libalpm hledá .sig a Shelly hlásí chybu).
 if ! grep -q '^\[cibulkaos\]' /etc/pacman.conf; then
-    printf '\n# CibulkaOS – aktualizace balíčku cibulkaos-base\n[cibulkaos]\nSigLevel = Optional TrustAll\nInclude = /etc/pacman.d/cibulkaos-mirrorlist\n' >> /etc/pacman.conf
+    printf '\n# CibulkaOS – aktualizace balíčku cibulkaos-base\n[cibulkaos]\nSigLevel = Never\nInclude = /etc/pacman.d/cibulkaos-mirrorlist\n' >> /etc/pacman.conf
 fi
 
 # 4) Odstraní případný zatoulaný neprivilegovaný účet 'root' vytvořený sysusers během pacstrap

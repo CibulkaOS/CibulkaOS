@@ -20,10 +20,17 @@ if (panel.formFactor === "horizontal") {
     }
 }
 
+var browserDesktop = applicationExists("org.torproject.torbrowser-launcher.desktop")
+    ? "org.torproject.torbrowser-launcher.desktop"
+    : "preferred://browser"
+var browserLauncher = applicationExists("org.torproject.torbrowser-launcher.desktop")
+    ? "applications:org.torproject.torbrowser-launcher.desktop"
+    : "preferred://browser"
+
 var kickoff = panel.addWidget("org.kde.plasma.kickoff")
 kickoff.currentConfigGroup = ["General"]
 var kickoffFavorites = [
-    "preferred://browser",
+    browserDesktop,
     "systemsettings.desktop",
     "org.kde.dolphin.desktop",
     "org.kde.konsole.desktop"
@@ -41,7 +48,7 @@ var pinnedLaunchers = [
     "applications:systemsettings.desktop",
     "preferred://filemanager",
     "applications:org.kde.konsole.desktop",
-    "preferred://browser"
+    browserLauncher
 ]
 if (applicationExists("com.shellyorg.shelly.desktop")) {
     pinnedLaunchers.splice(1, 0, "applications:com.shellyorg.shelly.desktop")

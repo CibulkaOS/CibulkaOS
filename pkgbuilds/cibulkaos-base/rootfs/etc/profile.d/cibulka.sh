@@ -72,11 +72,20 @@ command_not_found_handler() {
     command_not_found_handle "$@"
 }
 
-# Připomínka při spuštění interaktivního terminálu
-if [ -t 1 ] && [ "${CIBULKA_WELCOME_SHOWN:-0}" != "1" ]; then
-    export CIBULKA_WELCOME_SHOWN=1
-    echo ""
-    echo "  [CibulkaOS] Anti-GRU(B) systém aktivní | Firewall proti fízlokracii aktivní"
-    echo "  [Kyvadlo]   Siderický generátor: /dev/kyvadlo | Místo 'sudo' použijte 'kyvadlo'"
-    echo ""
-fi
+# Připomínka a fastfetch při spuštění interaktivního terminálu (obdobně jako Bazzite)
+case "$-" in
+    *i*)
+        if [ -t 1 ] && [ "${CIBULKA_WELCOME_SHOWN:-0}" != "1" ]; then
+            export CIBULKA_WELCOME_SHOWN=1
+            if [ "${CIBULKA_NO_FASTFETCH:-0}" != "1" ] \
+                && [ ! -f "${HOME:-/nonexistent}/.config/cibulkaos/no-fastfetch" ] \
+                && command -v fastfetch >/dev/null 2>&1; then
+                fastfetch || true
+            fi
+            echo ""
+            echo "  [CibulkaOS] Anti-GRU(B) systém aktivní | Firewall proti fízlokracii aktivní"
+            echo "  [Kyvadlo]   Siderický generátor: /dev/kyvadlo | Místo 'sudo' použijte 'kyvadlo'"
+            echo ""
+        fi
+        ;;
+esac

@@ -151,6 +151,11 @@ nftables
 # Display manager (pro instalovaný systém)
 sddm
 
+# Systémové informace s logem CibulkaOS
+fastfetch
+# Výchozí prohlížeč (Prohlížeč Tor)
+torbrowser-launcher
+
 # ===== CibulkaOS (lokální repo [cibulkaos], sestaveno přes: make pkgs) =====
 # Skripty, služby, hooky, témata a data CibulkaOS – zůstává i v nainstalovaném systému
 cibulkaos-base

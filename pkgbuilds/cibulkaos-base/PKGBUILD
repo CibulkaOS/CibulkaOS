@@ -14,7 +14,7 @@
 
 pkgname=cibulkaos-base
 pkgver=2026.11.22
-pkgrel=1
+pkgrel=5
 pkgdesc='CibulkaOS – siderické kyvadlo, lustrace, Anti-GRUB a firewall proti fízlokracii'
 arch=('any')
 url='https://cibulka.net/'
@@ -22,6 +22,7 @@ license=('LicenseRef-CibulkaOS')
 depends=(
     'bash'
     'coreutils'
+    'fastfetch'
     'gawk'
     'grub'
     'gzip'
@@ -31,6 +32,7 @@ depends=(
     'shelly'
     'sudo'
     'systemd'
+    'torbrowser-launcher'
 )
 optdepends=(
     'iptables: záložní backend firewallu proti fízlokracii'

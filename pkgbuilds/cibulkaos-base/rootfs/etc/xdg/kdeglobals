@@ -1,6 +1,7 @@
 [General]
 ColorScheme=CibulkaOS
 AccentColor=255,215,0
+BrowserApplication=org.torproject.torbrowser-launcher.desktop
 
 [Icons]
 Theme=breeze-dark

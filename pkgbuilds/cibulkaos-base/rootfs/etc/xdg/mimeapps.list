@@ -1,0 +1,7 @@
+[Default Applications]
+text/html=org.torproject.torbrowser-launcher.desktop
+application/xhtml+xml=org.torproject.torbrowser-launcher.desktop
+x-scheme-handler/http=org.torproject.torbrowser-launcher.desktop
+x-scheme-handler/https=org.torproject.torbrowser-launcher.desktop
+x-scheme-handler/about=org.torproject.torbrowser-launcher.desktop
+x-scheme-handler/unknown=org.torproject.torbrowser-launcher.desktop

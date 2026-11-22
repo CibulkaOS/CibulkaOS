@@ -1,0 +1,16 @@
+# V sekci [cibulkaos] v /etc/pacman.conf přepne 'SigLevel = Optional TrustAll' na 'SigLevel = Never',
+# aby libalpm v Shelly nehledal neexistující .sig soubory nepodepsaného repa [cibulkaos].
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = cibulkaos-base
+
+[Action]
+Description = CibulkaOS: nastavuji SigLevel = Never pro nepodepsané repo [cibulkaos]...
+When = PostTransaction
+Depends = bash
+Depends = coreutils
+Depends = gawk
+Depends = grep
+Exec = /usr/lib/cibulkaos/fix-cibulkaos-siglevel

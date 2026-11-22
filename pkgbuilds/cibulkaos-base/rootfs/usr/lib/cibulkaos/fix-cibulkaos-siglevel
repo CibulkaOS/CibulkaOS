@@ -1,0 +1,32 @@
+#!/bin/bash
+# Přepne v /etc/pacman.conf v sekci [cibulkaos] direktivu 'SigLevel = Optional TrustAll'
+# na 'SigLevel = Never'. S 'Optional' se libalpm snaží stáhnout neexistující .sig soubory
+# nepodepsaných balíčků [cibulkaos], na čemž Shelly hlásí falešnou chybu
+# "prepared package is missing from the package cache" (exit 1), přestože instalace proběhne.
+set -euo pipefail
+
+conf="${1:-/etc/pacman.conf}"
+[ -f "$conf" ] && [ ! -L "$conf" ] || exit 0
+
+tmp="${conf}.cibulkaos-siglevel"
+trap 'rm -f -- "$tmp"' EXIT
+
+gawk '
+    /^\[cibulkaos\][[:space:]]*$/ { in_sec = 1; print; next }
+    /^\[/ { in_sec = 0; print; next }
+    in_sec && /^[[:space:]]*SigLevel[[:space:]]*=[[:space:]]*Optional[[:space:]]+TrustAll[[:space:]]*$/ {
+        print "SigLevel = Never"
+        changed = 1
+        next
+    }
+    { print }
+    END { exit (changed ? 0 : 10) }
+' "$conf" > "$tmp" || {
+    rc=$?
+    [ "$rc" -eq 10 ] && exit 0
+    exit "$rc"
+}
+
+grep -q '^\[cibulkaos\]' "$tmp"
+chmod --reference="$conf" -- "$tmp"
+mv -f -- "$tmp" "$conf"
