@@ -1,31 +1,92 @@
 name: Web (GitHub Pages)
 
+# Web z web/ se nahrává do repa CibulkaOS/cibulkaos.github.io (Pages z větve main)
+# → https://cibulkaos.github.io/. Zápis přes deploy klíč jen pro to repo (secret PAGES_DEPLOY_KEY).
+# Stará adresa https://lukastrkan.github.io/CibulkaOS/ jen přesměrovává na novou.
+
 on:
   push:
     branches: [master]
-    paths: ["web/**", ".github/workflows/pages.yml"]
+    paths:
+      - "web/**"
+      - ".github/workflows/pages.yml"
   workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
+env:
+  SITE_REPO: CibulkaOS/cibulkaos.github.io
+  SITE_URL: https://cibulkaos.github.io/
+
 jobs:
-  deploy:
+  web:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    environment:
+      name: cibulkaos.github.io
+      url: ${{ env.SITE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Nahrát web do ${{ env.SITE_REPO }}
+        env:
+          DEPLOY_KEY: ${{ secrets.PAGES_DEPLOY_KEY }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/pages_deploy
+          chmod 600 ~/.ssh/pages_deploy
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/pages_deploy -o IdentitiesOnly=yes"
+
+          git clone --depth 1 "git@github.com:${SITE_REPO}.git" site
+          rsync -a --delete --exclude .git web/ site/
+          touch site/.nojekyll
+
+          cd site
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Web se nezměnil."
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "Web z ${GITHUB_REPOSITORY}@${GITHUB_SHA::7}"
+          git push origin HEAD:main
+
+  presmerovani:
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Stránka s přesměrováním
+        run: |
+          mkdir -p redirect
+          cat > redirect/index.html <<EOF
+          <!doctype html>
+          <html lang="cs">
+          <head>
+            <meta charset="utf-8">
+            <title>CibulkaOS se přestěhoval</title>
+            <link rel="canonical" href="${SITE_URL}">
+            <meta http-equiv="refresh" content="0; url=${SITE_URL}">
+            <script>location.replace("${SITE_URL}" + location.hash);</script>
+          </head>
+          <body>
+            <p>Web CibulkaOS se přestěhoval na <a href="${SITE_URL}">${SITE_URL}</a>.</p>
+          </body>
+          </html>
+          EOF
+          cp redirect/index.html redirect/404.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: web
+          path: redirect
       - id: deployment
         uses: actions/deploy-pages@v4

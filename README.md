@@ -9,7 +9,7 @@ Satirická distribuce na motivy Petra Cibulky: KDE Plasma 6, grafický instalát
 
 <p align="center">
   <a href="https://github.com/lukastrkan/CibulkaOS/releases/latest">⬇ Stáhnout ISO</a> ·
-  <a href="https://lukastrkan.github.io/CibulkaOS/">Web</a>
+  <a href="https://cibulkaos.github.io/">Web</a>
 </p>
 
 > **Satirický projekt.** CibulkaOS je parodie vytvořená pro pobavení. Nemá žádnou vazbu na Petra Cibulku
@@ -64,7 +64,7 @@ v `pkgbuilds/cibulkaos-base/PKGBUILD` a `make publish-repo` (vyžaduje přihlá�
 - `pkgbuilds/cibulkaos-base/` – balíček se vším, co dělá CibulkaOS CibulkaOS (skripty, služby, témata, data).
 - `pkgbuilds/calamares/` – Calamares s úpravou pro správce `cibulka` místo `root`.
 - `scripts/` – generátory grafiky a databáze seznamů, publikace pacman repa.
-- `web/` – statický web projektu (GitHub Pages).
+- `web/` – statický web projektu (https://cibulkaos.github.io/).
 
 ## Zdroje dat
 

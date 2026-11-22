@@ -47,7 +47,7 @@ Pozn.: `mkarchiso` přeskakuje už hotové fáze ve `work/`; po změně `cibulka
 ## Vydání ISO a web
 - ISO se vydává jako GitHub Release s tagem `vRRRR.MM.DD` (asset `cibulkaos-RRRR.MM.DD-x86_64.iso` + `.sha256`). **Limit GitHubu je 2 GiB na soubor** – ISO má ~2,13 GB (rezerva cca 18 MB); při přidávání balíčků hlídat velikost, případně ubrat nástroje z `packages.x86_64` převzaté z archiso `releng`.
 - Release `repo` je jen úložiště pacman repa `[cibulkaos]` (spravuje `scripts/publish-repo.sh`), ISO do něj nepatří.
-- Web `web/` nasazuje `.github/workflows/pages.yml` na https://lukastrkan.github.io/CibulkaOS/ (GitHub Pages, build_type workflow). Tlačítko ke stažení v `web/index.html` odkazuje přímo na asset konkrétního release → při novém vydání aktualizovat URL, datum a název souboru.
+- Web `web/` je na **https://cibulkaos.github.io/**: `.github/workflows/pages.yml` ho při pushi do `master` (změna `web/**`) nahraje do repa `CibulkaOS/cibulkaos.github.io` (organizace CibulkaOS, Pages z větve `main`, `.nojekyll`) přes deploy klíč v secretu `PAGES_DEPLOY_KEY`. Web se upravuje jen tady ve `web/`, v cílovém repu ne (přepíše se `rsync --delete`). Stará adresa https://lukastrkan.github.io/CibulkaOS/ (Pages tohoto repa) jen přesměrovává na novou. Tlačítko ke stažení v `web/index.html` odkazuje přímo na asset konkrétního release → při novém vydání aktualizovat URL, datum a název souboru.
 - Kořenový `README.md` a `LICENSE` (GPL-3.0-or-later, jako archiso). Zdroj seznamů StB: https://www.slunecnice.cz/sw/seznamy-stb-snb/
 
 ## Struktura repozitáře
