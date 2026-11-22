@@ -7,9 +7,10 @@
 # a mirrorlist (z balíčku cibulkaos-base) ukazuje na
 #   https://github.com/<owner>/<repo>/releases/download/repo
 #
-# Do repa jde jen cibulkaos-base (Calamares se po instalaci odstraňuje, online ho nikdo nepotřebuje).
-# Stejný název balíčku se nesmí publikovat dvakrát s jiným obsahem (klienti mají cache podle
-# názvu souboru) -> před publikací vždy zvyšte pkgver/pkgrel v pkgbuilds/cibulkaos-base/PKGBUILD.
+# Do repa jdou balíčky cibulkaos-base a shelly (Calamares se po instalaci odstraňuje,
+# online ho nikdo nepotřebuje). Stejný název balíčku se nesmí publikovat dvakrát s jiným
+# obsahem (klienti mají cache podle názvu souboru) -> nezměněný balíček se nechá na GitHubu
+# a znovu se jen zapíše do databáze; před publikací změny vždy zvyšte pkgver/pkgrel.
 #
 # Použití: scripts/publish-repo.sh   (nebo make publish-repo; vyžaduje přihlášené `gh`)
 set -euo pipefail
@@ -17,12 +18,16 @@ set -euo pipefail
 REPO_TAG="${REPO_TAG:-repo}"
 LOCALREPO="${LOCALREPO:-/tmp/cibulkaos-localrepo}"
 DB=cibulkaos
+PACKAGES=(cibulkaos-base shelly)
 
 command -v gh >/dev/null || { echo "CHYBA: chybí GitHub CLI (pacman -S github-cli; gh auth login)." >&2; exit 1; }
 
-pkg="$(ls -t "$LOCALREPO"/cibulkaos-base-*.pkg.tar.zst 2>/dev/null | head -1 || true)"
-[ -n "$pkg" ] || { echo "CHYBA: v $LOCALREPO není cibulkaos-base (spusťte make pkg-base)." >&2; exit 1; }
-name="$(basename "$pkg")"
+declare -a pkg_paths=()
+for p in "${PACKAGES[@]}"; do
+    pkg="$(ls -t "$LOCALREPO"/"${p}"-*.pkg.tar.zst 2>/dev/null | head -1 || true)"
+    [ -n "$pkg" ] || { echo "CHYBA: v $LOCALREPO není balíček '$p' (spusťte make pkg-base pkg-shelly)." >&2; exit 1; }
+    pkg_paths+=("$pkg")
+done
 
 if ! gh release view "$REPO_TAG" >/dev/null 2>&1; then
     echo ">>> Vytvářím release '$REPO_TAG' (úložiště pacman repa)..."
@@ -30,26 +35,46 @@ if ! gh release view "$REPO_TAG" >/dev/null 2>&1; then
         --notes "Pacman repozitář CibulkaOS. Soubory zde spravuje scripts/publish-repo.sh – needitovat ručně."
 fi
 
-if gh release view "$REPO_TAG" --json assets -q '.assets[].name' | grep -qxF "$name"; then
-    echo "CHYBA: $name už je publikovaný. Zvyšte pkgver/pkgrel v pkgbuilds/cibulkaos-base/PKGBUILD a spusťte make pkg-base." >&2
+existing_assets="$(gh release view "$REPO_TAG" --json assets -q '.assets[].name')"
+
+declare -a to_upload=()
+for pkg in "${pkg_paths[@]}"; do
+    name="$(basename "$pkg")"
+    if grep -qxF "$name" <<<"$existing_assets"; then
+        echo ">>> $name už je publikovaný – ponechávám v repu beze změny."
+    else
+        to_upload+=("$pkg")
+    fi
+done
+
+if [ "${#to_upload[@]}" -eq 0 ]; then
+    echo "CHYBA: žádný nový balíček k publikaci. Zvyšte pkgver/pkgrel v příslušném PKGBUILDu a přestavte balíček." >&2
     exit 1
 fi
 
 stage="$(mktemp -d)"
 trap 'rm -rf -- "${stage:?}"' EXIT
 
-cp -- "$pkg" "$stage/"
-repo-add -q "$stage/$DB.db.tar.gz" "$stage/$name"
+for pkg in "${pkg_paths[@]}"; do
+    name="$(basename "$pkg")"
+    cp -- "$pkg" "$stage/$name"
+    repo-add -q "$stage/$DB.db.tar.gz" "$stage/$name"
+done
+
 # GitHub Releases neumí symlinky -> nahradit .db/.files skutečnými soubory
 for f in "$DB.db" "$DB.files"; do
     cp --remove-destination -- "$(readlink -f "$stage/$f")" "$stage/$f"
 done
 
-# Nejdřív balíček, teprve potom databáze – db nikdy neodkazuje na chybějící soubor.
-echo ">>> Nahrávám $name..."
-gh release upload "$REPO_TAG" "$stage/$name"
+# Nejdřív nové balíčky, teprve potom databáze – db nikdy neodkazuje na chybějící soubor.
+for pkg in "${to_upload[@]}"; do
+    name="$(basename "$pkg")"
+    echo ">>> Nahrávám $name..."
+    gh release upload "$REPO_TAG" "$stage/$name"
+done
+
 echo ">>> Aktualizuji databázi repa..."
 gh release upload "$REPO_TAG" --clobber \
     "$stage/$DB.db" "$stage/$DB.db.tar.gz" "$stage/$DB.files" "$stage/$DB.files.tar.gz"
 
-echo ">>> Hotovo: $name je v [cibulkaos] ($(gh repo view --json url -q .url)/releases/tag/$REPO_TAG)"
+echo ">>> Hotovo: [cibulkaos] aktualizováno ($(gh repo view --json url -q .url)/releases/tag/$REPO_TAG)"

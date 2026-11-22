@@ -32,3 +32,9 @@ fi
 
 # 4) Odstraní případný zatoulaný neprivilegovaný účet 'root' vytvořený sysusers během pacstrap
 sed -i '/^root:/d' /etc/passwd /etc/shadow || true
+
+# 5) Odstraní případný klíč %INSTALLED_DB% zapsaný hostitelským pacmanem (např. CachyOS)
+#    během pacstrap – pojistka k hooku cibulkaos-clean-local-db.hook.
+if [ -x /usr/lib/cibulkaos/clean-local-db ]; then
+    /usr/lib/cibulkaos/clean-local-db
+fi

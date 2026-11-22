@@ -1,0 +1,38 @@
+#!/bin/bash
+# Odstraní nekompatibilní klíč %INSTALLED_DB% z lokální databáze pacmana.
+# Vzniká při buildu ISO na hostiteli s forkovaným pacmanem (např. CachyOS), zatímco
+# CibulkaOS používá standardní Arch Linux pacman, který tento klíč nezná.
+# Volá pacman hook cibulkaos-clean-local-db.hook (i při upgradu již nainstalovaného OS)
+# a jako pojistka customize_airootfs.sh při buildu ISO.
+shopt -s nullglob
+
+db_dir="${1:-/var/lib/pacman/local}"
+descs=("$db_dir"/*/desc)
+(( ${#descs[@]} > 0 )) || exit 0
+
+mapfile -d '' -t dirty < <(
+    gawk '/^%INSTALLED_DB%$/ { printf "%s\0", FILENAME; nextfile }' "${descs[@]}"
+)
+(( ${#dirty[@]} > 0 )) || exit 0
+
+rc=0
+for f in "${dirty[@]}"; do
+    [ -f "$f" ] && [ ! -L "$f" ] || continue
+    tmp="${f}.cibulkaos-clean"
+    if gawk '
+        /^%INSTALLED_DB%$/ { skip = 1; next }
+        skip && /^$/ { skip = 0; next }
+        skip && /^%[A-Z0-9_]+%$/ { skip = 0 }
+        !skip { print }
+    ' "$f" > "$tmp" \
+        && gawk '/^%NAME%$/ { n=1 } /^%VERSION%$/ { v=1 } END { exit !(n && v) }' "$tmp" \
+        && chmod --reference="$f" -- "$tmp" \
+        && mv -f -- "$tmp" "$f"; then
+        :
+    else
+        echo "CibulkaOS: nepodařilo se vyčistit $f" >&2
+        rm -f -- "$tmp"
+        rc=1
+    fi
+done
+exit "$rc"

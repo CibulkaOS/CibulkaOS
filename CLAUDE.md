@@ -11,28 +11,29 @@ Satirická distribuce Arch Linuxu (archiso + KDE Plasma 6 Wayland + Calamares) n
 - **Firewall proti fízlokracii:** Služba `fizlokracie.service` (`/usr/bin/fizlokracie-firewall`) blokuje ruské a čínské IPv4 rozsahy přes `nftables` (s fallbackem na `iptables`). Shellový profil `/etc/profile.d/cibulka.sh` přepisuje síťové a shellové chyby (404, DNS, odmítnuté spojení, nenalezený příkaz) na „Úspěšná sabotáž marxisticko-leninských struktur“.
 
 ## Build a testovací příkazy (`Makefile`)
-Build systém používá `archiso` (https://wiki.archlinux.org/title/Archiso) a lokální pacman repozitář `/tmp/cibulkaos-localrepo` pro vlastní build Calamares 3.4+ a balíčku `cibulkaos-base`.
+Build systém používá `archiso` (https://wiki.archlinux.org/title/Archiso) a lokální pacman repozitář `/tmp/cibulkaos-localrepo` pro vlastní build Calamares 3.4+, správce balíčků `shelly` a balíčku `cibulkaos-base`.
 
 ```bash
-make pkgs           # pkg-calamares + pkg-base do /tmp/cibulkaos-localrepo (BEZ sudo)
+make pkgs           # pkg-calamares + pkg-shelly + pkg-base do /tmp/cibulkaos-localrepo (BEZ sudo)
 make pkg-calamares  # Jen patchovaný Calamares ze zdrojáků (pomalé)
+make pkg-shelly     # Jen Shelly (předkompilované binárky z GitHub Releases; spouští ho i 'make build')
 make pkg-base       # Jen cibulkaos-base (rychlé; spouští ho i 'make build')
-make publish-repo   # Nahraje cibulkaos-base do veřejného pacman repa (GitHub Release 'repo', vyžaduje gh)
-make build          # BEZ sudo: přestaví cibulkaos-base, smaže jeho starou kopii z pacman cache, volá sudo mkarchiso → out/cibulkaos-YYYY.MM.DD-x86_64.iso
+make publish-repo   # Nahraje cibulkaos-base a shelly do veřejného pacman repa (GitHub Release 'repo', vyžaduje gh)
+make build          # BEZ sudo: přestaví cibulkaos-base + shelly, smaže staré kopie z pacman cache, volá sudo mkarchiso → out/cibulkaos-YYYY.MM.DD-x86_64.iso
 make run            # Spustí poslední ISO v QEMU (UEFI + KVM)
 make run-bios       # Spustí poslední ISO v QEMU (legacy BIOS)
 make run-install    # Vytvoří out/cibulkaos-disk.qcow2 (20G) a spustí ISO + disk v QEMU
 make run-installed  # Nabootuje nainstalovaný systém z out/cibulkaos-disk.qcow2
 make clean          # Smaže work/
 make clean-disk     # Smaže out/cibulkaos-disk.qcow2
-make clean-pkgs     # Smaže lokální repo a build cache Calamares i cibulkaos-base
+make clean-pkgs     # Smaže lokální repo a build cache Calamares, Shelly i cibulkaos-base
 ```
 
 Pozn.: `mkarchiso` přeskakuje už hotové fáze ve `work/`; po změně `cibulkaos-base` nebo `airootfs/` je před `make build` potřeba `make clean`.
 
 ## Aktualizace nainstalovaného systému
-- Systém se aktualizuje běžně přes `pacman -Syu` z Arch `[core]`/`[extra]` + online repa **`[cibulkaos]`**.
-- Repozitář projektu: https://github.com/CibulkaOS/CibulkaOS (organizace CibulkaOS; dřív `lukastrkan/CibulkaOS`, GitHub staré adresy včetně release assetů přesměrovává – na ně spoléhá mirrorlist v ISO v2026.11.21 a `cibulkaos-base` < 2026.11.21-3). Pacman repo `[cibulkaos]` = assety GitHub Release s tagem `repo` (`https://github.com/CibulkaOS/CibulkaOS/releases/download/repo`), obsahuje jen `cibulkaos-base` (bez Calamares).
+- Systém se aktualizuje běžně přes `pacman -Syu` (nebo graficky přes **Shelly**) z Arch `[core]`/`[extra]` + online repa **`[cibulkaos]`**.
+- Repozitář projektu: https://github.com/CibulkaOS/CibulkaOS (organizace CibulkaOS; dřív `lukastrkan/CibulkaOS`, GitHub staré adresy včetně release assetů přesměrovává – na ně spoléhá mirrorlist v ISO v2026.11.21 a `cibulkaos-base` < 2026.11.21-3). Pacman repo `[cibulkaos]` = assety GitHub Release s tagem `repo` (`https://github.com/CibulkaOS/CibulkaOS/releases/download/repo`), obsahuje `cibulkaos-base` a `shelly` (bez Calamares).
   - `customize_airootfs.sh` připisuje do `/etc/pacman.conf` sekci `[cibulkaos]` s `Include = /etc/pacman.d/cibulkaos-mirrorlist`; mirrorlist je v balíčku, takže změna URL přijde aktualizací.
   - Balíčky zatím **nejsou podepsané** (`SigLevel = Optional TrustAll`, ochrana jen HTTPS GitHubu).
   - Build ISO dál používá lokální `file:///tmp/cibulkaos-localrepo` (`archlive/pacman.conf`), ne GitHub.
@@ -41,6 +42,7 @@ Pozn.: `mkarchiso` přeskakuje už hotové fáze ve `work/`; po změně `cibulka
   - `cibulkaos-os-release.hook` – po instalaci/upgradu `filesystem` (který vlastní `/usr/lib/os-release`) zapíše zpět `/usr/share/cibulkaos/os-release`.
   - `95-cibulkaos-boot-nosparse.hook` – po `90-mkinitcpio-install.hook` přepíše `/boot/vmlinuz-*` a `/boot/*-ucode.img` přes `cp --sparse=never` (viz pastička 2).
   - `cibulkaos-grub-theme.hook` – synchronizuje téma Anti-GRUB do `/boot/grub/themes/cibulkaos/`, pokud tam existuje.
+  - `cibulkaos-clean-local-db.hook` – odstraní hostitelský klíč `%INSTALLED_DB%` (z forkovaného pacmana např. na CachyOS) z `/var/lib/pacman/local/*/desc` při buildu ISO i při upgradu existujících instalací.
 - Klíčenku pacmana (`pacman-key --init/--populate`) vytváří instalátor v `shellprocess.conf`; v live ISO je `/etc/pacman.d/gnupg` jen tmpfs a do cíle se nekopíruje.
 - Pozor: `sudo pacman -Syu` jde přes `kyvadlo` (50% zamítnutí); pro jistotu `/usr/bin/sudo pacman -Syu`.
 
@@ -65,15 +67,17 @@ Pozn.: `mkarchiso` přeskakuje už hotové fáze ve `work/`; po změně `cibulka
 - `pkgbuilds/cibulkaos-base/` – balíček CibulkaOS; `PKGBUILD` skládá balíček přímo ze stromu `rootfs/` (zrcadlí cílové cesty, nic se nestahuje):
   - `usr/bin/` – `kyvadlo`, `adduser`, `lustrace`, `anti-grub-mkconfig`, `anti-grub-install`, `anti-grub-check`, `fizlokracie-firewall`, `cibulkaos-firstboot-wallpaper`.
   - `usr/local/bin/sudo` – záměrná výjimka (balíčky do `/usr/local` normálně nepatří): `/usr/bin/sudo` vlastní balíček `sudo` a `/usr/local/bin` je v `PATH` dřív.
-  - `usr/lib/cibulkaos/` – `restore-kernel` (volá Calamares), `boot-nosparse`, `sync-grub-theme` (volají pacman hooky).
+  - `usr/lib/cibulkaos/` – `restore-kernel` (volá Calamares), `boot-nosparse`, `sync-grub-theme`, `clean-local-db` (volají pacman hooky).
   - `usr/share/libalpm/hooks/` – pacman hooky (viz „Aktualizace“).
   - `usr/lib/systemd/system/fizlokracie.service`, `anti-grub-check.service`; `usr/lib/udev/rules.d/99-kyvadlo.rules`, `usr/lib/tmpfiles.d/kyvadlo.conf` – `/dev/kyvadlo`.
   - `etc/sudoers.d/10-cibulka` – `Defaults runas_default=cibulka` (nutné, aby `/usr/bin/sudo` fungovalo bez uživatele `root`); práva 0750/0440 nastavuje `PKGBUILD`.
   - `etc/sysusers.d/{basic,arch}.conf` – override `/usr/lib/sysusers.d/` (UID 0 = `cibulka`, zabrání vzniku `root:979`).
   - `etc/profile.d/cibulka.sh` – wrappery pro `curl`, `ping` a `command_not_found_handle(r)` (načítáno v bash i zsh včetně non-login terminálů přes `/etc/bash.bashrc` a `.zshrc.local`); `etc/skel/.zshrc.local`.
-  - `etc/xdg/` – `autostart/cibulkaos-wallpaper.desktop` (tapeta `wallpapers/CibulkaOS/wallpaper-pravy-blok.jpg` po prvním přihlášení), `kdeglobals`, `konsolerc`; `etc/sddm.conf.d/10-cibulkaos.conf`.
+  - `etc/xdg/` – `autostart/cibulkaos-wallpaper.desktop` (tapeta `wallpapers/CibulkaOS/wallpaper-pravy-blok.jpg` po prvním přihlášení), `kdeglobals` (`LookAndFeelPackage=org.cibulkaos.desktop`), `konsolerc`; `etc/sddm.conf.d/10-cibulkaos.conf`.
+  - `usr/share/plasma/` – Look-and-Feel `org.cibulkaos.desktop` (výchozí panel a Kickoff se Shelly místo chybějícího KDE Discover) + jednorázový update skript `cibulkaos_replace_discover_with_shelly.js` pro už nainstalované systémy.
   - `usr/share/cibulkaos/` – `cibulkovy-seznamy.tsv.gz` (100 666 reálných záznamů StB), `cibulkovy-seznamy.txt` (fallback), `linux.preset`, `os-release`.
   - `usr/share/grub/themes/cibulkaos/` – Anti-GRUB téma kopírované do cílového systému; dále `usr/share/{wallpapers/CibulkaOS,icons,color-schemes,konsole,sddm}`.
+- `pkgbuilds/shelly/PKGBUILD` – balíček grafického správce balíčků **Shelly** (předkompilované binárky z `Seafoam-Labs/Shelly-ALPM`, polkit pravidlo pro `pkexec`); jde jak do ISO, tak do online repa `[cibulkaos]`.
 - `pkgbuilds/calamares/PKGBUILD` *(build výstupy a checkout zdrojáků `calamares/`, `src/`, `pkg/` jsou v `.gitignore`)* – staví Calamares ze zdrojáků s patchem v `prepare()`, aby `SetPasswordJob` nastavoval heslo pro `"cibulka"` místo `"root"` a `networkcfg` ignoroval `"cibulka"` jako live uživatele.
 - `web/` – samostatná statická prezentační WWW stránka (`index.html`, `style.css`, `app.js`, `assets/`) bez build kroku a bez externích JS knihoven. Texty jsou záměrně netechnické (pět funkcí jako archivní spisy + stažení ISO), bez ukázek ze systému. Nasazení přes GitHub Pages (viz „Vydání ISO a web“).
 

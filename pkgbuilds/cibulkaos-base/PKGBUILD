@@ -13,8 +13,8 @@
 #    (UID 0 = 'cibulka'), proto musí být v /etc.
 
 pkgname=cibulkaos-base
-pkgver=2026.11.21
-pkgrel=3
+pkgver=2026.11.22
+pkgrel=1
 pkgdesc='CibulkaOS – siderické kyvadlo, lustrace, Anti-GRUB a firewall proti fízlokracii'
 arch=('any')
 url='https://cibulka.net/'
@@ -28,6 +28,7 @@ depends=(
     'nftables'
     'sed'
     'shadow'
+    'shelly'
     'sudo'
     'systemd'
 )

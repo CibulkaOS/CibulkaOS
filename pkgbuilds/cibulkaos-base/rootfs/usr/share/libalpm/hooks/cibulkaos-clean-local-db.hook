@@ -1,0 +1,17 @@
+# Hostitelský pacman (např. CachyOS) při pacstrap zapisuje do /var/lib/pacman/local/*/desc
+# klíč %INSTALLED_DB%, který standardní Arch pacman v CibulkaOS nezná a hlásí u každého balíčku
+# varování. Tento hook vyčistí lokální databázi jak na konci pacstrap při buildu ISO, tak
+# automaticky při upgradu cibulkaos-base v již nainstalovaných systémech.
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = cibulkaos-base
+
+[Action]
+Description = CibulkaOS: čistím nekompatibilní klíč %INSTALLED_DB% z lokální databáze pacmana...
+When = PostTransaction
+Depends = bash
+Depends = coreutils
+Depends = gawk
+Exec = /usr/lib/cibulkaos/clean-local-db

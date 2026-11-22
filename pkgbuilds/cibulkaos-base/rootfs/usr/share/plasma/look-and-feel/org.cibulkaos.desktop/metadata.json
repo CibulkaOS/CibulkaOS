@@ -1,0 +1,18 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "CibulkaOS"
+            }
+        ],
+        "Category": "",
+        "Description": "Tmavý motiv a výchozí rozložení plochy CibulkaOS",
+        "Description[cs]": "Tmavý motiv a výchozí rozložení plochy CibulkaOS",
+        "Id": "org.cibulkaos.desktop",
+        "License": "GPL-3.0-or-later",
+        "Name": "CibulkaOS",
+        "Name[cs]": "CibulkaOS",
+        "Website": "https://cibulkaos.github.io/"
+    }
+}

@@ -6,4 +6,9 @@ pkgbuilds/*/src/
 pkgbuilds/*/pkg/
 pkgbuilds/*/*.pkg.tar.*
 pkgbuilds/calamares/calamares/
+pkgbuilds/shelly/*.tar.gz
+pkgbuilds/shelly/*.svg
+pkgbuilds/shelly/*.desktop
+pkgbuilds/shelly/shellybuild-*.conf
+pkgbuilds/shelly/shelly-flatpak-integrate-*
 __pycache__/
